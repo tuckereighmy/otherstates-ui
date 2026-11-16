@@ -1,0 +1,30 @@
+/* Global document reset. Component styles and tokens are compiled by StyleX. */
+/* Layer order: `legacy` (a product's own global CSS, moved in by the installer) is lowest, so it can never
+   override a component; the reset comes next; then Tailwind 4's layers, for an app that still uses it, so its
+   utilities keep beating the reset but never a component; StyleX's layers, declared after this file, win. This
+   file has to be the first CSS the app loads, or a later declaration could reorder the layers. */
+@layer legacy, reset, theme, base, components, utilities;
+@layer reset {
+  *, *::before, *::after { box-sizing: border-box; }
+  html {
+    background: var(--os-color-bg-canvas);
+    color: var(--os-color-fg-base);
+    /* Grayscale antialiasing on macOS, set once at the root. The docs shell relies on it. */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  body { margin: 0; min-width: 320px; font: 400 16px/1.5 var(--os-font-family, system-ui); }
+  /* Controls take their context's type, letter spacing included, so they read the same with or without a
+     global reset of the app's own (Tailwind's preflight does the same). */
+  button, input, textarea, select { font: inherit; letter-spacing: inherit; border: 0; margin: 0; }
+  button, input, textarea { padding: 0; }
+  img, svg, canvas, video { vertical-align: middle; }
+  /* Fallback ring for anything a component does not style itself (spec 1.8): the same 2px ring, offset 2. */
+  :focus-visible {
+    outline-style: solid;
+    outline-width: 2px;
+    outline-color: var(--os-color-focus-ring, currentColor);
+    outline-offset: 2px;
+  }
+  ::selection { background: var(--os-color-accent-muted); }
+}

@@ -1,0 +1,121 @@
+# Otherstates UI
+
+> A React design system on StyleX tokens and React Aria. Agents compose these components and tokens only: read src/ui/AGENTS.md first, look up a component here before building one, and run `node src/ui/agent/check.mjs` before finishing.
+
+## Rules
+
+- [Agent guide](src/ui/AGENTS.md): the workflow and the rules every change follows
+- [Design spec](src/ui/DESIGN_SPEC.md): the source of truth for every pixel decision
+- [Tokens](src/ui/agent/tokens.md): every color, space, radius, type and motion value
+- [Manifest](src/ui/agent/manifest.json): all of the above as JSON
+
+## Agents
+
+- [Agent identity](src/ui/agent/components/agent-identity.md): Show which agent is acting: its tile, name and model.
+- [Agent inbox](src/ui/agent/components/agent-inbox.md): Sort agent tasks by who they wait on, as a board or a list.
+- [Agent status](src/ui/agent/components/agent-status.md): Show what an agent, run or task is doing with one shared set of states.
+- [Approval card](src/ui/agent/components/approval-card.md): Ask a person before an agent acts: what will happen, how risky it is and one decision.
+- [Approval gates](src/ui/agent/components/approval-gates.md): Show a run paused at gates, each with what it would change and a decision.
+- [Change review](src/ui/agent/components/change-review.md): Review an agent's proposed changes one at a time, accepting or rejecting each.
+- [Checkpoints](src/ui/agent/components/checkpoints.md): Let a person go back to before an agent step, after saying exactly what that undoes.
+- [Context window](src/ui/agent/components/context-window.md): Show how much room is left in a model's context window, what fills it, and let a person choose what to free.
+- [Decision card](src/ui/agent/components/decision-card.md): Ask a person to choose between options, with the agent's pick and follow-up questions.
+- [Diff](src/ui/agent/components/diff.md): Show what an agent changed: line counts, changed files and changed lines.
+- [Handoff list](src/ui/agent/components/handoff-list.md): List what agents are waiting on a person for, longest wait first, and decide each in place.
+- [Permission rules](src/ui/agent/components/permission-rules.md): Set what an agent may do, tool by tool: allow, ask first or deny.
+- [Review queue](src/ui/agent/components/review-queue.md): Work through what agents finished: filter it, pick an item and review it beside the list.
+- [Rolling number](src/ui/agent/components/rolling-number.md): Show a figure that counts its way to a new value.
+- [Run block](src/ui/agent/components/run-block.md): Show an agent's run inside a message: each step with its real tool call, open while it works and one line once it ends.
+- [Run timeline](src/ui/agent/components/run-timeline.md): Show a run's steps on one time axis: where the time went, what failed and how long it waited on people.
+- [Steps](src/ui/agent/components/steps.md): Show what a run did, is doing and will do, as steps on a rail.
+- [Usage bar](src/ui/agent/components/usage-bar.md): Split one budget into its parts: a context window, a run's cost or a rate limit.
+
+## Chat
+
+- [Chat message](src/ui/agent/components/chat-message.md): Show one message: a person's bubble, or an assistant's reply as prose, with its actions.
+- [Chat thread](src/ui/agent/components/chat-thread.md): Frame a conversation: one column for the messages and the composer, pinned to the newest text.
+- [Markdown](src/ui/agent/components/markdown.md): Render an assistant's reply as prose: lists, code, tables and links, built as React elements.
+- [Prompt suggestions](src/ui/agent/components/prompt-suggestions.md): Offer short prompts that start an empty conversation.
+- [Reasoning](src/ui/agent/components/reasoning.md): Show what a model thought before it answered: open while it thinks, one line once it is done.
+
+## Feedback
+
+- [Alert](src/ui/agent/components/alert.md): Highlight a message in the flow of a page.
+- [Badge](src/ui/agent/components/badge.md): Mark a status or highlight a short label.
+- [Chart](src/ui/agent/components/chart.md): Show values over time or across categories, with a readout on hover and focus.
+- [Empty](src/ui/agent/components/empty.md): Explain what belongs here and how to get started.
+- [Meter](src/ui/agent/components/meter.md): Show a measurement against a known limit.
+- [Progress](src/ui/agent/components/progress.md): Show how far along a task is.
+- [Skeleton](src/ui/agent/components/skeleton.md): Reserve space while content loads.
+- [Spinner](src/ui/agent/components/spinner.md): Show that work is underway.
+- [Stat](src/ui/agent/components/stat.md): Show one number that matters, with the change, limit or trend that gives it meaning.
+- [Toast](src/ui/agent/components/toast.md): Confirm an action without interrupting the current task.
+
+## Forms
+
+- [Autocomplete](src/ui/agent/components/autocomplete.md): A text field that suggests matches while someone types, and still accepts any text.
+- [Button](src/ui/agent/components/button.md): Run an action or submit a form.
+- [Calendar](src/ui/agent/components/calendar.md): Select a date, a date range, or several dates from a month grid.
+- [Checkbox](src/ui/agent/components/checkbox.md): Turn an independent option on or off.
+- [Checkbox Group](src/ui/agent/components/checkbox-group.md): Collect several choices under one shared label.
+- [Combobox](src/ui/agent/components/combobox.md): Type to filter a list of options, then choose one or several.
+- [Composer](src/ui/agent/components/composer.md): Draft a message with a growing field, mentions and commands.
+- [Date Picker](src/ui/agent/components/date-picker.md): Type a date or choose it from a calendar popup.
+- [Field](src/ui/agent/components/field.md): Label a control, describe it, and show its validation message.
+- [Fieldset](src/ui/agent/components/fieldset.md): Group related fields under one legend.
+- [Form](src/ui/agent/components/form.md): Collect fields, validate them and submit them together.
+- [Input](src/ui/agent/components/input.md): Enter a single line of text.
+- [Input Group](src/ui/agent/components/input-group.md): Add icons, text, buttons or a label to an input or textarea, inside one field shell.
+- [Label](src/ui/agent/components/label.md): Give a control a visible, accessible name.
+- [Number Field](src/ui/agent/components/number-field.md): Type a number, or step it with the buttons, the arrow keys or a drag.
+- [OTP Field](src/ui/agent/components/otp-field.md): Enter a short, segmented verification code.
+- [Radio Group](src/ui/agent/components/radio-group.md): Choose exactly one option from a set.
+- [Segmented Control](src/ui/agent/components/segmented-control.md): Switch between a short row of related choices, views or pages.
+- [Select](src/ui/agent/components/select.md): Choose one value, or several, from a fixed list.
+- [Slider](src/ui/agent/components/slider.md): Pick a value, or a range of values, along a track.
+- [Switch](src/ui/agent/components/switch.md): Turn a setting on or off immediately.
+- [Textarea](src/ui/agent/components/textarea.md): Write and edit multiple lines of text.
+- [Toggle](src/ui/agent/components/toggle.md): A button that turns one option on or off.
+- [Toggle Group](src/ui/agent/components/toggle-group.md): Keep several toggle buttons in one selection group.
+
+## Layout
+
+- [Accordion](src/ui/agent/components/accordion.md): Reveal related sections one at a time.
+- [Avatar](src/ui/agent/components/avatar.md): Represent a person with an image or initials.
+- [Card](src/ui/agent/components/card.md): Give a distinct piece of content its own surface.
+- [Collapsible](src/ui/agent/components/collapsible.md): Show or hide content with a single trigger.
+- [Frame](src/ui/agent/components/frame.md): Give a group of related elements a visible boundary.
+- [Group](src/ui/agent/components/group.md): Visually join a set of related controls.
+- [Scroll Area](src/ui/agent/components/scroll-area.md): Let long content scroll inside a bounded region.
+- [Separator](src/ui/agent/components/separator.md): Make a clear break between groups of content.
+- [Table](src/ui/agent/components/table.md): Make structured information easy to compare across rows.
+
+## Navigation
+
+- [Breadcrumb](src/ui/agent/components/breadcrumb.md): Show the path from a parent page to the current view.
+- [Command](src/ui/agent/components/command.md): A searchable list of commands, in a palette window or in the page.
+- [Kbd](src/ui/agent/components/kbd.md): Display the keys for a shortcut.
+- [Pagination](src/ui/agent/components/pagination.md): Move between numbered pages of a result set.
+- [Sidebar](src/ui/agent/components/sidebar.md): A navigation panel that folds to its icons, and moves into a sheet on small screens.
+- [Tabs](src/ui/agent/components/tabs.md): Move between related panels on one page.
+- [Toolbar](src/ui/agent/components/toolbar.md): Group frequent actions in a keyboard-friendly row.
+
+## Overlays
+
+- [Alert Dialog](src/ui/agent/components/alert-dialog.md): Ask for confirmation before a consequential action.
+- [Context Menu](src/ui/agent/components/context-menu.md): A menu that opens at the pointer on right click or long press.
+- [Dialog](src/ui/agent/components/dialog.md): Keep attention on a short task in a modal window.
+- [Drawer](src/ui/agent/components/drawer.md): Slide a panel in from an edge, with swipe gestures and snap points.
+- [Menu](src/ui/agent/components/menu.md): A list of actions in a popup, with keyboard navigation and typeahead.
+- [Popover](src/ui/agent/components/popover.md): Open a small panel beside its trigger.
+- [Preview Card](src/ui/agent/components/preview-card.md): A card that previews a link when it is hovered or focused.
+- [Sheet](src/ui/agent/components/sheet.md): Open a side panel for details or settings.
+- [Tooltip](src/ui/agent/components/tooltip.md): A short label that appears when a control is hovered or focused.
+
+## Templates
+
+- [Agent chat](src/ui/catalog/templates/chat/index.tsx): A conversation with an agent: thinking, real tool runs, an approval and a streamed answer.
+- [Agent dashboard](src/ui/catalog/templates/agents/index.tsx): What agents are doing, what waits on you, and where each run’s time and money went.
+- [Analytics](src/ui/catalog/templates/overview/index.tsx): A dashboard with key numbers, a trend chart, recent activity and goals.
+- [Projects](src/ui/catalog/templates/projects/index.tsx): A sortable project list with filters, a board view and an editable detail sheet.
+- [Settings](src/ui/catalog/templates/settings/index.tsx): Workspace settings in tabs: general, members, notifications and billing.

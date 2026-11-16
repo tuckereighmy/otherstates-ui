@@ -1,0 +1,146 @@
+/*
+  Template pages: the gallery, the framed preview and the full-screen route.
+  Plain CSS on the --os-* tokens, in the docs layer like catalog.css.
+*/
+
+@layer docs {
+  /* ---------- Frame ---------- */
+
+  .tpl-frame {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 1280 / 800;
+    border-radius: var(--os-radius-lg);
+    background: var(--os-color-bg-subtle);
+    box-shadow: inset 0 0 0 1px var(--os-color-border-subtle);
+  }
+  .tpl-frame iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: block;
+    width: var(--tpl-width);
+    height: var(--tpl-height);
+    border: 0;
+    transform: scale(var(--tpl-scale));
+    transform-origin: 0 0;
+    visibility: hidden;
+  }
+  .tpl-frame[data-ready] iframe { visibility: visible; }
+  /* The hairline sits above the page inside the frame. */
+  .tpl-frame::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: inset 0 0 0 1px var(--os-color-border-subtle);
+    pointer-events: none;
+  }
+  .tpl-frame[data-thumbnail] iframe { pointer-events: none; }
+
+  /* ---------- Template page ---------- */
+
+  .tpl-example { margin-bottom: 32px; }
+  .tpl-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 8px;
+  }
+  .tpl-bar .docs-tabs { margin-bottom: 0; }
+  .tpl-open {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 28px;
+    padding-inline: 12px;
+    border-radius: var(--os-radius-control);
+    color: var(--os-color-fg-muted);
+    font-size: 13px;
+    font-weight: var(--os-font-weight-medium);
+    line-height: 20px;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background-color var(--docs-time) var(--docs-ease), color var(--docs-time) var(--docs-ease);
+  }
+  .tpl-open:hover { background: var(--docs-fill-hover); color: var(--os-color-fg-base); }
+
+  .tpl-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0 0 24px;
+    padding: 0;
+    list-style: none;
+  }
+  .tpl-chip {
+    display: inline-flex;
+    align-items: center;
+    height: 28px;
+    padding-inline: 12px;
+    border-radius: var(--os-radius-control);
+    background: var(--docs-fill);
+    color: var(--os-color-fg-base);
+    font-size: 13px;
+    font-weight: var(--os-font-weight-medium);
+    line-height: 20px;
+    text-decoration: none;
+    transition: background-color var(--docs-time) var(--docs-ease);
+  }
+  .tpl-chip:hover { background: var(--docs-fill-press); }
+
+  /* ---------- Gallery ---------- */
+
+  .tpl-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px 16px;
+    margin: 0 0 32px;
+    padding: 0;
+    list-style: none;
+  }
+  .tpl-card {
+    position: relative;
+    display: grid;
+    align-content: start;
+    gap: 12px;
+    min-width: 0;
+    border-radius: var(--os-radius-lg);
+  }
+  .tpl-card-body { display: grid; gap: 4px; padding-inline: 4px; }
+  .tpl-card-title {
+    color: var(--os-color-fg-base);
+    font-size: var(--os-font-size-sm);
+    font-weight: var(--os-font-weight-medium);
+    line-height: 20px;
+    text-decoration: none;
+  }
+  /* The title link covers the whole card: one tab stop, and the thumbnail is clickable. */
+  .tpl-card-title::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+  }
+  .tpl-card-title:focus-visible { outline: none; }
+  .tpl-card-title:focus-visible::after { box-shadow: var(--os-focus-shadow); }
+  .tpl-card:hover .tpl-frame { box-shadow: inset 0 0 0 1px var(--os-color-border-muted); }
+  .tpl-card:hover .tpl-frame::after { box-shadow: inset 0 0 0 1px var(--os-color-border-muted); }
+  .tpl-card-text {
+    margin: 0;
+    color: var(--os-color-fg-muted);
+    font-size: var(--os-font-size-sm);
+    line-height: 20px;
+    text-wrap: pretty;
+  }
+
+  /* ---------- Full screen ---------- */
+
+  .tpl-fullscreen {
+    height: 100vh;
+    height: 100dvh;
+    background: var(--os-color-bg-subtle);
+  }
+  .tpl-error { margin: 0; padding: 24px; color: var(--os-color-fg-muted); font-size: var(--os-font-size-sm); line-height: 20px; }
+}

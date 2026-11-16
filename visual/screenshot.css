@@ -1,0 +1,7 @@
+/* Applied only while a screenshot is taken: the docs chrome stays out of example crops. Hidden, not removed,
+   so the layout underneath does not move. */
+.docs-header,
+.docs-sidebar,
+.docs-toc {
+  visibility: hidden !important;
+}

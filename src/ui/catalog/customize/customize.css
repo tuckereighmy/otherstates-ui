@@ -1,0 +1,173 @@
+/* The Customize page. Plain CSS on --os-* tokens; the only raw colors are the
+   swatches, which arrive as data through an inline --cz-color. */
+@layer docs {
+  .cz-builder { container: cz / inline-size; }
+  .cz-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 32px; align-items: start; }
+
+  @container cz (min-width: 880px) {
+    .cz-grid { grid-template-columns: 300px minmax(0, 1fr); }
+    /* The rail stays in view while the preview scrolls; 4px of padding gives focus rings room. */
+    .cz-rail {
+      position: sticky;
+      top: calc(var(--docs-header-height) + 24px);
+      max-height: calc(100dvh - var(--docs-header-height) - 48px);
+      margin: -4px;
+      padding: 4px;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      scrollbar-width: thin;
+    }
+  }
+
+  /* ---------- Rail ---------- */
+
+  .cz-rail { display: grid; gap: 24px; min-width: 0; align-content: start; }
+  .cz-section { display: grid; gap: 8px; min-width: 0; justify-items: start; }
+  .cz-section > * { max-width: 100%; }
+  .cz-label { display: block; }
+  .cz-help {
+    margin: 0;
+    color: var(--os-color-fg-muted);
+    font-size: var(--os-font-size-xs);
+    line-height: 20px;
+    text-wrap: pretty;
+  }
+  .cz-num { font-variant-numeric: tabular-nums; }
+  .cz-muted { color: var(--os-color-fg-muted); }
+  .cz-adjustments { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; }
+  .cz-advanced { display: grid; gap: 12px; justify-items: start; padding-block: 4px 8px; }
+  .cz-advanced > .cz-section { width: 100%; }
+  .cz-import { display: grid; gap: 12px; justify-items: start; padding-block: 4px 8px; }
+  .cz-import > :first-child { width: 100%; }
+
+  .cz-dot {
+    display: block;
+    width: 16px;
+    height: 16px;
+    border-radius: var(--os-radius-full);
+    background: var(--cz-color);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--os-color-fg-base) 14%, transparent);
+  }
+  .cz-chip {
+    display: block;
+    width: 16px;
+    height: 16px;
+    border-radius: var(--os-radius-full);
+    background: linear-gradient(135deg, var(--cz-a) 50%, var(--cz-b) 50%);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--os-color-fg-base) 14%, transparent);
+  }
+  /* A preset's accent, quiet fill and secondary text, as thirds of one 16px swatch. */
+  .cz-trio {
+    display: block;
+    flex: none;
+    width: 16px;
+    height: 16px;
+    border-radius: var(--os-radius-full);
+    background: conic-gradient(var(--cz-a) 0 180deg, var(--cz-b) 0 270deg, var(--cz-c) 0);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--os-color-fg-base) 14%, transparent);
+  }
+
+  .cz-footer { display: grid; gap: 12px; }
+  .cz-summary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    justify-self: start;
+    border-radius: var(--os-radius-xs);
+    color: var(--os-color-fg-muted);
+    font-size: var(--os-font-size-xs);
+    line-height: 18px;
+    text-decoration: none;
+  }
+  .cz-summary svg { flex: none; color: var(--os-color-fg-success, currentColor); }
+  .cz-summary:hover { color: var(--os-color-fg-base); }
+  .cz-summary:focus-visible { outline: 2px solid var(--docs-ring); outline-offset: 2px; }
+  .cz-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+  /* ---------- Header popover ---------- */
+
+  .cz-compact { display: grid; gap: 16px; }
+  .cz-label-row { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; width: 100%; }
+  .cz-value { color: var(--os-color-fg-muted); font-size: var(--os-font-size-xs); line-height: 20px; font-variant-numeric: tabular-nums; }
+  .cz-pop-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; }
+  .cz-pop-link {
+    border-radius: var(--os-radius-xs);
+    color: var(--os-color-fg-base);
+    font-size: var(--os-font-size-sm);
+    line-height: 20px;
+    text-decoration: underline;
+    text-decoration-color: var(--os-color-border-moderate, currentColor);
+    text-underline-offset: 3px;
+  }
+  .cz-pop-link:hover { text-decoration-color: currentColor; }
+  .cz-pop-link:focus-visible { outline: 2px solid var(--docs-ring); outline-offset: 2px; }
+
+  /* ---------- Preview ---------- */
+
+  .cz-preview { display: grid; gap: 12px; min-width: 0; container: cz-preview / inline-size; }
+  .cz-preview-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .cz-preview-title { margin-inline-end: auto; color: var(--os-color-fg-base); font-size: var(--os-font-size-sm); font-weight: var(--os-font-weight-medium); line-height: 20px; }
+  .cz-canvas { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  @container cz-preview (min-width: 720px) {
+    .cz-canvas[data-split] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  .cz-half { display: grid; gap: 8px; min-width: 0; align-content: start; }
+  .cz-half-label { margin: 0; color: var(--os-color-fg-muted); font-size: var(--os-font-size-xs); line-height: 20px; }
+  /* Fill first, no border (spec 1.5). The stage is concentric with the xl cards it holds (spec 1.3,
+     run outward): its radius is the card radius plus the inset, so it follows every corner ladder. */
+  .cz-stage {
+    --cz-inset: 16px;
+    container: cz-stage / inline-size;
+    min-width: 0;
+    padding: var(--cz-inset);
+    border-radius: calc(var(--os-radius-xl) + var(--cz-inset));
+    background: var(--os-color-bg-subtle);
+    color: var(--os-color-fg-base);
+    font-family: var(--os-font-family);
+  }
+
+  .cz-screen { display: grid; gap: 16px; min-width: 0; }
+  .cz-screen-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; align-items: start; }
+  @container cz-stage (min-width: 640px) {
+    .cz-screen-row { grid-template-columns: auto minmax(0, 1fr); }
+  }
+  .cz-screen > *, .cz-screen-row > * { min-width: 0; }
+  .cz-card-actions { display: flex; align-items: center; gap: 4px; }
+  .cz-form { display: grid; gap: 16px; padding-block-start: 16px; justify-items: stretch; }
+  .cz-choices { display: grid; gap: 4px; justify-items: start; }
+  .cz-form-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .cz-push { margin-inline-start: auto; }
+  .cz-plan { display: grid; gap: 16px; }
+  .cz-badges { display: flex; flex-wrap: wrap; gap: 8px; }
+  .cz-members { display: grid; gap: 4px; margin: 0; padding: 16px 0 0; list-style: none; }
+  .cz-members > li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 48px;
+  }
+  .cz-member { display: grid; min-width: 0; }
+  .cz-member-name { color: var(--os-color-fg-base); font-size: var(--os-font-size-sm); font-weight: var(--os-font-weight-medium); line-height: 20px; }
+  .cz-member-mail { overflow: hidden; color: var(--os-color-fg-muted); font-size: var(--os-font-size-xs); line-height: 18px; text-overflow: ellipsis; white-space: nowrap; }
+  .cz-showcase { margin-top: 20px; }
+
+  /* ---------- Below the builder ---------- */
+
+  .cz-below { max-width: var(--docs-measure); }
+  .cz-export { margin: 0 0 16px; }
+  .cz-export-body { display: grid; gap: 16px; padding-block-start: 16px; min-width: 0; }
+  .cz-export-body > * { min-width: 0; }
+  .cz-export-body .docs-code { margin: 0; }
+  .cz-file { display: grid; gap: 8px; min-width: 0; margin: 0; }
+  .cz-file-name { color: var(--os-color-fg-muted); font: 12px/20px var(--docs-mono); }
+  .cz-export-lead { margin: 0; color: var(--os-color-fg-muted); font-size: var(--os-font-size-sm); line-height: 20px; text-wrap: pretty; }
+  .cz-export-lead code { font: 13px/20px var(--docs-mono); color: var(--os-color-fg-base); }
+  .cz-export-options { display: flex; flex-wrap: wrap; align-items: end; gap: 16px 24px; }
+  .cz-changes { display: grid; gap: 4px; margin: 0; padding: 4px 0 8px; list-style: none; font-size: var(--os-font-size-xs); line-height: 20px; }
+  .cz-changes > li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; color: var(--os-color-fg-muted); }
+  .cz-changes code { color: var(--os-color-fg-base); font: 12px/20px var(--docs-mono); overflow-wrap: anywhere; }
+  .cz-change-scheme { width: 40px; color: var(--os-color-fg-subtle); }
+  .cz-audit { margin: 0 0 16px; overflow-x: auto; }
+  .cz-result { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
+}

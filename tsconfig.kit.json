@@ -1,0 +1,28 @@
+{
+  // What a product compiles after installing the kit, with the settings of a fresh `npm create vite` react-ts
+  // app: unused-code errors, erasable syntax only, and the DOM lib without DOM.Iterable. `npm run kit` runs it.
+  "compilerOptions": {
+    "target": "ES2023",
+    "lib": ["ES2023", "DOM"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "moduleDetection": "force",
+    "jsx": "react-jsx",
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "allowArbitraryExtensions": true,
+    "verbatimModuleSyntax": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "erasableSyntaxOnly": true,
+    "noFallthroughCasesInSwitch": true,
+    "types": ["vite/client"]
+  },
+  "include": [
+    "src/ui/components", "src/ui/customize", "src/ui/*.ts",
+    "src/ui/catalog/docs/*/*.tsx", "src/ui/catalog/docs/*/index.ts", "src/ui/catalog/docs/types.ts", "src/ui/catalog/docs/code-imports.d.ts",
+    "src/ui/catalog/templates/*/*.ts", "src/ui/catalog/templates/*/*.tsx", "src/ui/catalog/templates/registry.ts"
+  ]
+}

@@ -1,0 +1,990 @@
+/*
+  Otherstates UI docs shell.
+
+  Plain CSS on the --os-* tokens: no raw color values here. Everything lives in the "docs" layer,
+  which ui/index.html orders after the reset and before StyleX, so a component's own styles always
+  win over the docs' styles for the page around it.
+
+  Contents: tokens and base · focus · header · layout · sidebar · on this page · page head · prose ·
+  example tabs and stage · code · steps · props table · pager · actions and cards · search · phone sheet.
+*/
+
+@layer docs {
+  /* ---------- Tokens and base ---------- */
+
+  :root {
+    color-scheme: light;
+    --docs-header-height: 56px;
+    --docs-gutter: 24px;
+    --docs-sidebar-width: 248px;
+    --docs-aside-width: 200px;
+    --docs-column-gap: 40px;
+    --docs-measure: 760px;
+    --docs-page-top: 48px;
+    /* Where a heading stops under the sticky header after an anchor jump. */
+    --docs-anchor-offset: calc(var(--docs-header-height) + 24px);
+
+    --docs-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    --docs-radius-control: calc(var(--os-radius-md) - 2px);
+
+    /* Fills are ink mixed into whatever is underneath, so they work on the canvas and on a stage. */
+    --docs-fill-hover: color-mix(in oklab, var(--os-color-fg-base) 4%, transparent);
+    --docs-fill: color-mix(in oklab, var(--os-color-fg-base) 6%, transparent);
+    --docs-fill-press: color-mix(in oklab, var(--os-color-fg-base) 10%, transparent);
+    --docs-line: var(--os-color-border-subtle);
+
+    /* The one focus ring (spec 1.8). The fallback covers a token file from before the ring token. */
+    --docs-ring: var(--os-color-focus-ring, var(--os-color-accent-moderate));
+
+    --docs-time: var(--os-motion-press);
+    --docs-time-enter: var(--os-motion-popup);
+    --docs-ease: var(--os-ease-settle);
+
+    background: var(--os-color-bg-canvas);
+    color: var(--os-color-fg-base);
+  }
+
+  :root[data-ui-theme="dark"] {
+    color-scheme: dark;
+    --docs-fill-hover: color-mix(in oklab, var(--os-color-fg-base) 6%, transparent);
+    --docs-fill: color-mix(in oklab, var(--os-color-fg-base) 9%, transparent);
+    --docs-fill-press: color-mix(in oklab, var(--os-color-fg-base) 14%, transparent);
+    /* The dark border token is drawn for controls. As a page hairline on the near-black canvas it
+       reads much heavier than its light counterpart does on white, so the page's own lines sit
+       part of the way back towards the canvas. Raised panels (the palette) keep the full token. */
+    --docs-line: color-mix(in oklab, var(--os-color-border-subtle) 64%, var(--os-color-bg-canvas));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :root { --docs-time: 0ms; --docs-time-enter: 0ms; }
+  }
+
+  /* body keeps the library's base type from base.css (and its font smoothing). React Aria renders
+     popovers, menus and dialogs into body, so an example's overlay gets the same type as the
+     example on the stage, not the docs' reading type. */
+  body { min-width: 0; }
+
+  /* The docs' reading type: on the app root, and on the docs' own overlays (search, the phone
+     sheet), which React Aria renders outside it. */
+  .docs-app,
+  .docs-layer {
+    font: var(--os-font-weight-regular) var(--os-font-size-md)/1.6 var(--os-font-family);
+    letter-spacing: -0.006em;
+  }
+
+  .docs-app { min-height: 100dvh; }
+
+  .docs-sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* ---------- Focus: one ring for everything the docs draw ---------- */
+
+  :where(.docs-app, .docs-layer) :where(a, button, input, [tabindex], [role="tab"]):focus-visible:not(:where(.docs-stage *, [data-docs-raw] *)) {
+    outline: 2px solid var(--docs-ring);
+    outline-offset: 2px;
+  }
+
+  /* Places focus is sent to by script. They are destinations, not controls. */
+  .docs-main:focus-visible,
+  .docs-title:focus-visible,
+  .docs-prose :is(h2, h3)[tabindex="-1"]:focus-visible,
+  .docs-palette-dialog:focus-visible,
+  .docs-sheet-dialog:focus-visible { outline: none; }
+
+  .docs-skip {
+    position: fixed;
+    z-index: 100;
+    top: 12px;
+    left: 12px;
+    padding: 8px 12px;
+    border-radius: var(--docs-radius-control);
+    background: var(--os-color-bg-contrast);
+    color: var(--os-color-fg-on-contrast);
+    font-size: var(--os-font-size-sm);
+    font-weight: var(--os-font-weight-medium);
+    line-height: 20px;
+    text-decoration: none;
+    transform: translateY(calc(-100% - 16px));
+  }
+  .docs-skip:focus { transform: none; }
+
+  /* ---------- Header ---------- */
+
+  .docs-header {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    height: var(--docs-header-height);
+    /* A pixel of padding answers the pixel of border, so the contents center on whole pixels. */
+    padding-top: 1px;
+    border-bottom: 1px solid var(--docs-line);
+    background: var(--os-color-bg-canvas);
+  }
+  .docs-header-inner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 100%;
+    max-width: 1440px;
+    margin-inline: auto;
+    padding-inline: var(--docs-gutter);
+  }
+
+  .docs-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    height: 32px;
+    /* The mark sits on the gutter line; the padding is room for the focus ring. */
+    margin-inline-start: -4px;
+    padding-inline: 4px 8px;
+    border-radius: var(--docs-radius-control);
+    color: var(--os-color-fg-base);
+    text-decoration: none;
+    transition: opacity var(--docs-time) var(--docs-ease);
+  }
+  .docs-brand:hover { opacity: .76; }
+  .docs-brand:active { opacity: .6; }
+  /* The logos are masks over the text color, so they follow light and dark. Long: 2297 x 280; small (phones):
+     514 x 293. */
+  .docs-brand-logo {
+    display: block;
+    flex: none;
+    background: currentColor;
+    -webkit-mask: var(--docs-logo) center / contain no-repeat;
+    mask: var(--docs-logo) center / contain no-repeat;
+  }
+  .docs-brand-logo-long { width: calc(20px * 2297 / 280); height: 20px; }
+  .docs-brand-logo-small { display: none; width: calc(24px * 514 / 293); height: 24px; }
+  .docs-brand-name {
+    color: var(--os-color-fg-muted);
+    font-size: var(--os-font-size-md);
+    font-weight: var(--os-font-weight-medium);
+    line-height: 20px;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+  }
+
+  /* The last control hangs 8px into the gutter so its icon, not its hit area, sits on the gutter line. */
+  .docs-header-actions { display: flex; align-items: center; gap: 4px; margin-inline: auto -8px; }
+
+  .docs-search {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    width: 240px;
+    height: 32px;
+    margin-inline-end: 8px;
+    /* 8px to the icon and 6px to the key hint: each sits as far from the side as from the top. */
+    padding-inline: 8px 6px;
+    border-radius: var(--docs-radius-control);
+    background: var(--docs-fill);
+    color: var(--os-color-fg-muted);
+    font-size: var(--os-font-size-sm);
+    line-height: 20px;
+    letter-spacing: inherit;
+    text-align: start;
+    cursor: pointer;
+    transition: background-color var(--docs-time) var(--docs-ease), color var(--docs-time) var(--docs-ease);
+  }
+  .docs-search:hover { background: var(--docs-fill-press); color: var(--os-color-fg-base); }
+  .docs-search:active { background: color-mix(in oklab, var(--os-color-fg-base) 14%, transparent); }
+  .docs-search svg { flex: none; }
+  .docs-search-label { flex: 1; }
+
+  .docs-kbd {
+    display: inline-grid;
+    place-items: center;
+    flex: none;
+    min-width: 20px;
+    height: 20px;
+    padding-inline: 5px;
+    border-radius: max(var(--os-radius-xs), calc(var(--os-radius-sm) - 1px));
+    background: var(--os-color-bg-canvas);
+    box-shadow: inset 0 0 0 1px var(--docs-line);
+    color: var(--os-color-fg-subtle);
+    font: var(--os-font-weight-medium) 11px/1 var(--os-font-family);
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+
+  .docs-header-link,
+  .docs-icon-button {
+    display: inline-grid;
+    place-items: center;
+    height: 32px;
+    border-radius: var(--docs-radius-control);
+    background: transparent;
+    color: var(--os-color-fg-muted);
+    cursor: pointer;
+    transition: background-color var(--docs-time) var(--docs-ease), color var(--docs-time) var(--docs-ease);
+  }
+  .docs-header-link { padding-inline: 12px; font-size: var(--os-font-size-sm); line-height: 20px; text-decoration: none; }
+  .docs-icon-button { flex: none; width: 32px; }
+  .docs-header-link:hover,
+  .docs-icon-button:hover { background: var(--docs-fill); color: var(--os-color-fg-base); }
+  .docs-header-link:active,
+  .docs-icon-button:active { background: var(--docs-fill-press); color: var(--os-color-fg-base); }
+  .docs-menu-button { display: none; }
+
+  /* ---------- Layout ---------- */
+
+  .docs-shell {
+    display: grid;
+    grid-template-columns: var(--docs-sidebar-width) minmax(0, 1fr);
+    column-gap: var(--docs-column-gap);
+    max-width: 1440px;
+    margin-inline: auto;
+    padding-inline: var(--docs-gutter);
+  }
+  .docs-main { min-width: 0; padding-block: var(--docs-page-top) 96px; }
+  .docs-page { max-width: var(--docs-measure); margin-inline: auto; }
+  .docs-aside { display: none; min-width: 0; }
+
+  /* ---------- Sidebar ---------- */
+
+  .docs-sidebar {
+    position: sticky;
+    top: var(--docs-header-height);
+    align-self: start;
+    height: calc(100dvh - var(--docs-header-height));
+    /* Rows hang 12px into the gutter so their text lines up with the brand mark. The 4px of
+       padding keeps a focus ring from being cut off by the scroll container. */
+    margin-inline: -16px -4px;
+    padding: var(--docs-page-top) 4px 48px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+  }
+  .docs-sidebar:hover,
+  .docs-sidebar:focus-within { scrollbar-color: var(--os-color-border-muted) transparent; }
+
+  .docs-nav-group + .docs-nav-group { margin-top: 24px; }
+  .docs-nav-label {
+    margin: 0 0 4px;
+    padding-inline: 12px;
+    color: var(--os-color-fg-subtle);
+    font-size: var(--os-font-size-xs);
+    font-weight: var(--os-font-weight-medium);
+    line-height: 20px;
+    letter-spacing: 0;
+  }
+  .docs-nav-list { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; }
+  .docs-nav-link {
+    display: block;
+    height: 32px;
+    padding: 6px 12px;
+    overflow: hidden;
+    border-radius: var(--docs-radius-control);
+    color: var(--os-color-fg-muted);
+    font-size: var(--os-font-size-sm);
+    line-height: 20px;
+    text-decoration: none;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transition: background-color var(--docs-time) var(--docs-ease), color var(--docs-time) var(--docs-ease);
+  }
+  .docs-nav-link:hover { background: var(--docs-fill-hover); color: var(--os-color-fg-base); }
+  .docs-nav-link:active { background: var(--docs-fill-press); }
+  .docs-nav-link[aria-current="page"] { background: var(--docs-fill); color: var(--os-color-fg-base); font-weight: var(--os-font-weight-medium); }
+  .docs-nav-link[aria-current="page"]:active { background: var(--docs-fill-press); }
+
+  /* ---------- On this page ---------- */
+
+  .docs-toc {
+    position: sticky;
+    /* 4px of padding gives focus rings room inside the scroll container; the offset takes it back
+       so the label sits on the same line as the page's eyebrow. */
+    top: calc(var(--docs-header-height) + var(--docs-page-top) - 4px);
+    max-height: calc(100dvh - var(--docs-header-height) - var(--docs-page-top) - 20px);
+    margin: -4px;
+    padding: 4px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: none;
+  }
+  .docs-toc-label {
+    margin: 0 0 8px;
+    color: var(--os-color-fg-subtle);
+    font-size: var(--os-font-size-xs);
+    font-weight: var(--os-font-weight-medium);
+    line-height: 20px;
+    letter-spacing: 0;
+  }
+  /* A hairline runs down the list; a marker on it shows the current section and slides between
+     sections as the page scrolls. OnThisPage sets the marker's position. */
+  .docs-toc ul { position: relative; margin: 0; padding: 0; list-style: none; }
+  .docs-toc ul::before,
+  .docs-toc ul::after { content: ""; position: absolute; top: 0; left: 0; width: 1px; pointer-events: none; }
+  .docs-toc ul::before { bottom: 0; background: var(--docs-line); }
+  .docs-toc ul::after {
+    height: var(--docs-toc-marker-height, 0px);
+    background: var(--os-color-fg-base);
+    opacity: var(--docs-toc-marker-opacity, 0);
+    transform: translateY(var(--docs-toc-marker-top, 0px));
+    transition: opacity var(--docs-time) var(--docs-ease);
+  }
+  .docs-toc ul[data-slide]::after {
+    transition: opacity var(--docs-time) var(--docs-ease), transform var(--docs-time-enter) var(--docs-ease), height var(--docs-time-enter) var(--docs-ease);
+  }
+  .docs-toc a {
+    display: block;
+    padding: 4px 0 4px 12px;
+    border-radius: var(--os-radius-xs);
+    color: var(--os-color-fg-muted);
+    font-size: 13px;
+    line-height: 20px;
+    text-decoration: none;
+    text-wrap: pretty;
+    transition: color var(--docs-time) var(--docs-ease);
+  }
+  .docs-toc li[data-level="3"] a { padding-inline-start: 24px; }
+  .docs-toc a:hover { color: var(--os-color-fg-base); }
+  .docs-toc a:active { color: var(--os-color-fg-subtle); }
+  .docs-toc a[aria-current] { color: var(--os-color-fg-base); }
+
+  /* ---------- Page head ---------- */
+
+  /* Two classes on each rule, so the prose defaults for paragraphs do not reach in here. */
+  .docs-page-head { margin-bottom: 32px; }
+  .docs-page-head .docs-eyebrow { margin: 0 0 8px; color: var(--os-color-fg-muted); font-size: 13px; font-weight: var(--os-font-weight-medium); line-height: 20px; letter-spacing: 0; }
+  .docs-title {
+    margin: 0;
+    color: var(--os-color-fg-base);
+    font-size: 32px;
+    font-weight: var(--os-font-weight-semibold);
+    /* Whole-pixel line heights keep everything below the title on the 4px grid. */
+    line-height: 36px;
+    letter-spacing: -0.028em;
+    text-wrap: balance;
+    overflow-wrap: anywhere;
+  }
+  .docs-page-head .docs-lead,
+  .docs-prose > .docs-lead {
+    max-width: 640px;
+    margin: 12px 0 0;
+    color: var(--os-color-fg-muted);
+    font-size: 17px;
+    line-height: 28px;
+    letter-spacing: -0.012em;
+    text-wrap: pretty;
+  }
+
+  .docs-note {
+    margin: 0 0 32px;
+    padding: 12px 16px;
+    border-radius: var(--os-radius-md);
+    background: var(--os-color-bg-subtle);
+    color: var(--os-color-fg-muted);
+    font-size: var(--os-font-size-sm);
+    line-height: 20px;
+  }
+
+  /* ---------- Prose ----------
+     Inside .docs-prose, plain h2, h3, p, ul, ol, a, code, kbd, hr and table are styled as page content.
+     Anything inside a preview stage, a code block or [data-docs-raw] is left alone, and so is
+     any list or link that carries its own class. */
+
+  .docs-prose > :last-child { margin-bottom: 0; }
+
+  .docs-prose :is(h2, h3):not(:where(.docs-stage *, [data-docs-raw] *)) {
+    color: var(--os-color-fg-base);
+    font-weight: var(--os-font-weight-semibold);
+    text-wrap: balance;
+    scroll-margin-top: var(--docs-anchor-offset);
+  }
+  /* Whole-pixel line heights on the 4px grid, like the title's. */
+  .docs-prose h2:not(:where(.docs-stage *, [data-docs-raw] *)) { margin: 48px 0 12px; font-size: 20px; line-height: 28px; letter-spacing: -0.018em; }
+  .docs-prose h3:not(:where(.docs-stage *, [data-docs-raw] *)) { margin: 32px 0 8px; font-size: 16px; line-height: 24px; letter-spacing: -0.011em; }
+  .docs-prose h2 + h3:not(:where(.docs-stage *, [data-docs-raw] *)),
+  .docs-prose h2 + .docs-section > h3:first-child { margin-top: 16px; }
+  /* A section heading with no text under it sits straight on tabs or a table, which carry more
+     weight than a line of text, so it keeps a little more air. */
+  .docs-prose .docs-section > h3:not(:has(+ p)) { margin-bottom: 12px; }
+
+  .docs-prose p:not(:where(.docs-stage *, [data-docs-raw] *)) { margin: 0 0 16px; color: var(--os-color-fg-muted); text-wrap: pretty; }
+  .docs-prose strong:not(:where(.docs-stage *, [data-docs-raw] *)) { color: var(--os-color-fg-base); font-weight: var(--os-font-weight-semibold); }
+
+  .docs-prose :is(ul, ol):not([class]):not(:where(.docs-stage *, [data-docs-raw] *)) { margin: 0 0 16px; padding-inline-start: 20px; color: var(--os-color-fg-muted); }
+  /* A list inside a step is still a first-level list to the reader: the same solid bullet, not the
+     hollow one browsers give a list nested in another list. */
+  .docs-prose ul:not([class]):not(:where(.docs-stage *, [data-docs-raw] *)) { list-style-type: disc; }
+  .docs-prose :is(ul, ol):not([class]):not(:where(.docs-stage *, [data-docs-raw] *)) > li { padding-inline-start: 4px; text-wrap: pretty; }
+  .docs-prose :is(ul, ol):not([class]):not(:where(.docs-stage *, [data-docs-raw] *)) > li + li { margin-top: 8px; }
+  .docs-prose :is(ul, ol):not([class]):not(:where(.docs-stage *, [data-docs-raw] *)) > li::marker { color: var(--os-color-fg-disabled); }
+
+  .docs-prose a:not([class]):not(:where(.docs-stage *, [data-docs-raw] *)) {
+    border-radius: max(1px, calc(var(--os-radius-sm) / 3));
+    color: var(--os-color-fg-base);
+    font-weight: var(--os-font-weight-medium);
+    text-decoration: underline;
+    text-decoration-color: color-mix(in oklab, var(--os-color-fg-base) 28%, transparent);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+    transition: text-decoration-color var(--docs-time) var(--docs-ease), color var(--docs-time) var(--docs-ease);
+  }
+  .docs-prose a:not([class]):not(:where(.docs-stage *, [data-docs-raw] *)):hover { text-decoration-color: currentColor; }
+  .docs-prose a:not([class]):not(:where(.docs-stage *, [data-docs-raw] *)):active { color: var(--os-color-fg-muted); }
+
+  /* A name in running text is one word: it never breaks at its own hyphens or slashes. */
+  .docs-prose code:not(:where(.docs-stage *, .docs-code *, .docs-table *, table *, [data-docs-raw] *)) {
+    padding: 2px 5px;
+    border-radius: max(var(--os-radius-xs), calc(var(--os-radius-sm) - 1px));
+    background: var(--docs-fill);
+    color: var(--os-color-fg-base);
+    font: var(--os-font-weight-regular) 0.867em/1.4 var(--docs-mono);
+    letter-spacing: 0;
+    white-space: nowrap;
+  }
+  .docs-prose kbd:not([class]):not(:where(.docs-stage *, [data-docs-raw] *)) {
+    padding: 2px 5px;
+    border-radius: max(var(--os-radius-xs), calc(var(--os-radius-sm) - 1px));
+    box-shadow: inset 0 0 0 1px var(--docs-line);
+    color: var(--os-color-fg-base);
+    font: var(--os-font-weight-medium) 0.8em/1.4 var(--os-font-family);
+  }
+  .docs-prose hr:not(:where(.docs-stage *, [data-docs-raw] *)) { height: 1px; margin: 48px 0; border: 0; background: var(--docs-line); }
+
+  /* A plain table in a page: hairline rows, in the rhythm of the props table. */
+  .docs-prose table:not([class]):not(:where(.docs-stage *, [data-docs-raw] *)) { width: 100%; margin: 0 0 16px; border-collapse: collapse; font-size: var(--os-font-size-sm); line-height: 20px; }
+  .docs-prose table:not([class]):not(:where(.docs-stage *, [data-docs-raw] *)) :is(th, td) { padding: 10px 16px 10px 0; border-bottom: 1px solid var(--docs-line); color: var(--os-color-fg-muted); font-weight: var(--os-font-weight-regular); text-align: start; vertical-align: baseline; }
+  .docs-prose table:not([class]):not(:where(.docs-stage *, [data-docs-raw] *)) :is(th, td):last-child { padding-inline-end: 0; }
+  .docs-prose table:not([class]):not(:where(.docs-stage *, [data-docs-raw] *)) thead th { padding-block: 0 8px; color: var(--os-color-fg-subtle); font-size: var(--os-font-size-xs); font-weight: var(--os-font-weight-medium); letter-spacing: 0; white-space: nowrap; }
+  .docs-prose table:not([class]):not(:where(.docs-stage *, [data-docs-raw] *)) tbody th { color: var(--os-color-fg-base); font-weight: var(--os-font-weight-medium); }
+  .docs-prose table:not([class]):not(:where(.docs-stage *, [data-docs-raw] *)) tbody tr:last-child > * { border-bottom-color: transparent; }
+  /* Names in a table are set like the props table's: mono, without the inline chip. */
+  .docs-prose table:not([class]):not(:where(.docs-stage *, [data-docs-raw] *)) code { color: var(--os-color-fg-base); font: var(--os-font-weight-regular) 13px/20px var(--docs-mono); letter-spacing: 0; white-space: nowrap; }
+
+  /* Headings link to themselves. The mark shows on hover and on keyboard focus. */
+  .docs-anchor { border-radius: var(--os-radius-xs); color: inherit; text-decoration: none; }
+  .docs-anchor::after {
+    content: "#";
+    content: "#" / "";
+    margin-inline-start: 8px;
+    color: var(--os-color-fg-disabled);
+    font-weight: var(--os-font-weight-regular);
+    opacity: 0;
+    transition: opacity var(--docs-time) var(--docs-ease);
+  }
+  .docs-anchor:hover::after,
+  .docs-anchor:focus-visible::after { opacity: 1; }
+  .docs-anchor:active { color: var(--os-color-fg-muted); }
+  /* A line height of 1 keeps the mono name inside the heading's own line box, whatever the font's metrics. */
+  .docs-prose :is(h2, h3) > .docs-anchor > code { padding: 0; background: none; font-size: 0.9375em; font-weight: var(--os-font-weight-semibold); line-height: 1; }
+
+  /* Under a description the line tucks up to it; straight under the heading it keeps the heading's gap. */
+  .docs-prose p.docs-extends { font-size: var(--os-font-size-sm); line-height: 20px; }
+  .docs-prose p + p.docs-extends { margin-top: -4px; }
+
+  /* ---------- Example: tabs, stage ---------- */
+
+  .docs-example { margin: 0 0 16px; }
+  .docs-tabs { display: flex; gap: 2px; margin-bottom: 8px; }
+  .docs-tab {
+    display: grid;
+    place-items: center;
+    height: 28px;
+    padding-inline: 12px;
+    border-radius: var(--os-radius-sm);
+    color: var(--os-color-fg-muted);
+    font-size: 13px;
+    font-weight: var(--os-font-weight-medium);
+    line-height: 20px;
+    letter-spacing: 0;
+    cursor: pointer;
+    transition: background-color var(--docs-time) var(--docs-ease), color var(--docs-time) var(--docs-ease);
+  }
+  .docs-tab[data-hovered] { background: var(--docs-fill-hover); color: var(--os-color-fg-base); }
+  .docs-tab[data-selected] { background: var(--docs-fill); color: var(--os-color-fg-base); }
+  .docs-tab[data-pressed] { background: var(--docs-fill-press); }
+  .docs-tabpanel { border-radius: var(--os-radius-lg); }
+
+  /* The stage shows a component as an app would: the library's own base type (the same as body in
+     base.css), not the docs'. It never clips, so popovers and tooltips can leave it.
+     data-stage="canvas" is for parts filled with bg-subtle, which would vanish on the default fill. */
+  .docs-stage {
+    display: flex;
+    flex-direction: column;
+    /* "safe" keeps an example wider or taller than the stage from being cut off at the start.
+       Browsers without it use the plain value on the line before. */
+    align-items: center;
+    align-items: safe center;
+    justify-content: center;
+    justify-content: safe center;
+    min-width: 0;
+    padding: 32px;
+    border-radius: var(--os-radius-lg);
+    background: var(--os-color-bg-subtle);
+    /* Chart rings and gaps are cut in the color behind the chart. */
+    --os-chart-surface: var(--os-color-bg-subtle);
+    color: var(--os-color-fg-base);
+    font: var(--os-font-weight-regular) 16px/1.5 var(--os-font-family);
+    letter-spacing: normal;
+  }
+  .docs-stage[data-stage="canvas"] {
+    background: var(--os-color-bg-canvas);
+    --os-chart-surface: var(--os-color-bg-canvas);
+    box-shadow: inset 0 0 0 1px var(--os-color-border-subtle);
+  }
+  .docs-stage[data-align="start"] { align-items: flex-start; justify-content: flex-start; }
+  .docs-stage[data-align="stretch"] { align-items: stretch; }
+  .docs-stage > * { max-width: 100%; }
+  .docs-stage-error { margin: 0; color: var(--os-color-fg-muted); font-size: var(--os-font-size-sm); }
+
+  /* ---------- Code ---------- */
+
+  .docs-code {
+    position: relative;
+    margin: 0 0 16px;
+    overflow: hidden;
+    border-radius: var(--os-radius-lg);
+    background: var(--os-color-bg-subtle);
+    scroll-margin-block: calc(var(--docs-header-height) + 16px) 16px;
+  }
+  /* Code is never shorter than the preview it replaces, so switching tabs does not pull the rest
+     of the page up under the reader. PreviewStage measures the stage. */
+  .docs-tabpanel > .docs-code { min-height: var(--docs-stage-height, 0px); margin: 0; }
+  .docs-code pre {
+    margin: 0;
+    padding: 16px 56px 16px 20px;
+    overflow-x: auto;
+    color: var(--os-color-fg-base);
+    /* 20px lines keep a block's height on the 4px grid (16 + 20n + 16), and center the first line
+       on the copy button: 12px down, 28px tall. */
+    font: var(--os-font-weight-regular) 13px/20px var(--docs-mono);
+    letter-spacing: 0;
+    tab-size: 2;
+    scrollbar-width: thin;
+    scrollbar-color: var(--os-color-border-muted) transparent;
+  }
+  .docs-code code { font: inherit; }
+  /* The scrolling region takes keyboard focus; the ring goes round the whole block. */
+  .docs-code pre:focus-visible { outline: none; }
+  .docs-code:has(> pre:focus-visible) { outline: 2px solid var(--docs-ring); outline-offset: 2px; }
+
+  /* Long lines fade out before the copy button instead of running under it. The padding on the
+     right of the code means the end of every line can still be scrolled clear of it. */
+  .docs-code::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 72px;
+    /* As tall as the button. The first line is centered on it and the second clears it. */
+    height: 40px;
+    background: linear-gradient(to right, transparent, var(--os-color-bg-subtle) 24px);
+    pointer-events: none;
+  }
+
+  .docs-code[data-collapsed] pre { max-height: 368px; overflow-y: hidden; }
+  .docs-code-more { display: flex; justify-content: center; padding: 0 0 12px; }
+  .docs-code[data-collapsed] .docs-code-more {
+    position: absolute;
+    inset: auto 0 0;
+    padding-top: 60px;
+    background: linear-gradient(to bottom, transparent, var(--os-color-bg-subtle) 64px);
+    pointer-events: none;
+  }
+  .docs-code-toggle,
+  .docs-code-copy {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 28px;
+    border-radius: var(--os-radius-sm);
+    color: var(--os-color-fg-muted);
+    font: var(--os-font-weight-medium) var(--os-font-size-xs)/16px var(--os-font-family);
+    letter-spacing: 0;
+    cursor: pointer;
+    transition: background-color var(--docs-time) var(--docs-ease), color var(--docs-time) var(--docs-ease);
+  }
+  .docs-code-toggle { padding-inline: 10px 8px; background: var(--os-color-bg-subtle); pointer-events: auto; }
+  .docs-code-toggle:hover,
+  .docs-code-copy:hover { background: color-mix(in oklab, var(--os-color-fg-base) 7%, var(--os-color-bg-subtle)); color: var(--os-color-fg-base); }
+  .docs-code-toggle:active,
+  .docs-code-copy:active { background: color-mix(in oklab, var(--os-color-fg-base) 12%, var(--os-color-bg-subtle)); }
+  .docs-code-copy {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    justify-content: center;
+    min-width: 28px;
+    padding-inline: 7px;
+    background: var(--os-color-bg-subtle);
+  }
+  .docs-code-copy[data-state="copied"],
+  .docs-code-copy[data-state="selected"] { padding-inline: 8px 10px; color: var(--os-color-fg-base); }
+
+  .docs-tok-comment { color: var(--os-color-fg-subtle); }
+  .docs-tok-punct { color: var(--os-color-fg-muted); }
+  .docs-tok-keyword { color: color-mix(in oklab, var(--os-color-fg-error) 78%, var(--os-color-fg-base)); }
+  .docs-tok-string { color: color-mix(in oklab, var(--os-color-fg-success) 84%, var(--os-color-fg-base)); }
+  .docs-tok-number { color: color-mix(in oklab, var(--os-color-fg-warning) 88%, var(--os-color-fg-base)); }
+  .docs-tok-tag { color: color-mix(in oklab, var(--os-color-fg-info) 88%, var(--os-color-fg-base)); }
+  .docs-tok-attr { color: color-mix(in oklab, var(--os-color-fg-info) 42%, var(--os-color-fg-muted)); }
+
+  /* ---------- Steps ---------- */
+
+  .docs-prose .docs-steps { display: grid; gap: 16px; margin: 0 0 16px; padding: 0; list-style: none; counter-reset: docs-step; }
+  .docs-steps > li { position: relative; min-width: 0; padding-inline-start: 40px; counter-increment: docs-step; }
+  .docs-steps > li::before {
+    content: counter(docs-step);
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    border-radius: var(--os-radius-full);
+    background: var(--docs-fill);
+    color: var(--os-color-fg-muted);
+    font-size: var(--os-font-size-xs);
+    font-weight: var(--os-font-weight-medium);
+    line-height: 1;
+    letter-spacing: 0;
+    font-variant-numeric: tabular-nums;
+  }
+  .docs-prose .docs-steps > li > :last-child { margin-bottom: 0; }
+  .docs-prose .docs-steps > li > p { margin-bottom: 12px; }
+
+  /* ---------- Props table ---------- */
+
+  /* The wrapper scrolls sideways on a phone. Its 4px of padding is room for the focus ring, and it
+     is positioned so the screen-reader-only text in the table scrolls with it. */
+  .docs-table-wrap {
+    container: docs-props / inline-size;
+    position: relative;
+    margin: 0 -4px 16px;
+    padding: 4px;
+    overflow-x: auto;
+    border-radius: var(--os-radius-sm);
+    scrollbar-width: thin;
+    scrollbar-color: var(--os-color-border-muted) transparent;
+  }
+  .docs-table-wrap:focus-visible { outline-offset: 0; }
+  .docs-table { width: 100%; min-width: 640px; border-collapse: collapse; table-layout: fixed; font-size: var(--os-font-size-sm); line-height: 20px; }
+  .docs-table-col-prop { width: 22%; }
+  .docs-table-col-type { width: 27%; }
+  .docs-table-col-default { width: 16%; }
+  .docs-table :is(th, td) { padding: 10px 16px 10px 0; border-bottom: 1px solid var(--docs-line); font-weight: var(--os-font-weight-regular); text-align: start; vertical-align: baseline; overflow-wrap: anywhere; }
+  .docs-table :is(th, td):last-child { padding-inline-end: 0; }
+  .docs-table thead th { padding-block: 0 8px; color: var(--os-color-fg-subtle); font-size: var(--os-font-size-xs); font-weight: var(--os-font-weight-medium); letter-spacing: 0; white-space: nowrap; }
+  .docs-table tbody tr:last-child > * { border-bottom-color: transparent; }
+  .docs-table td:last-child { color: var(--os-color-fg-muted); overflow-wrap: break-word; text-wrap: pretty; }
+  .docs-table code { color: var(--os-color-fg-base); font: var(--os-font-weight-regular) 13px/20px var(--docs-mono); letter-spacing: 0; }
+  .docs-table code.docs-table-type { color: var(--os-color-fg-muted); }
+  .docs-table-none { color: var(--os-color-fg-disabled); }
+  /* The name and its badge: side by side, or the badge under a long name, flush with its start. */
+  .docs-table-name { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; max-width: 100%; }
+  .docs-table-name > code { min-width: 0; }
+  .docs-table-required {
+    display: inline-block;
+    padding-inline: 5px;
+    border-radius: var(--os-radius-xs);
+    background: var(--docs-fill);
+    color: var(--os-color-fg-muted);
+    font-size: 11px;
+    font-weight: var(--os-font-weight-medium);
+    line-height: 16px;
+    letter-spacing: 0;
+    white-space: nowrap;
+    vertical-align: 1px;
+  }
+
+  /* Too narrow for four columns (a phone, or the column beside the sidebar on a tablet): each prop
+     becomes a block. The name leads, its description follows, and the type and default sit under
+     it as labeled lines. Nothing scrolls sideways. */
+  @container docs-props (max-width: 559px) {
+    .docs-table { min-width: 0; table-layout: auto; }
+    .docs-table :is(colgroup, thead) { display: none; }
+    .docs-table,
+    .docs-table tbody { display: block; }
+    .docs-table tr {
+      display: grid;
+      grid-template-columns: 64px minmax(0, 1fr);
+      column-gap: 12px;
+      row-gap: 6px;
+      padding-block: 14px;
+      border-bottom: 1px solid var(--docs-line);
+    }
+    .docs-table tbody tr:first-child { padding-top: 0; }
+    .docs-table tbody tr:last-child { padding-bottom: 0; border-bottom-color: transparent; }
+    .docs-table :is(th, td) { display: block; grid-column: 1 / -1; padding: 0; border: 0; }
+    .docs-table tbody td:last-child { order: 1; }
+    .docs-table td[data-label] {
+      display: grid;
+      grid-template-columns: subgrid;
+      order: 2;
+    }
+    .docs-table td[data-label]::before { content: attr(data-label); color: var(--os-color-fg-subtle); font-size: var(--os-font-size-xs); font-weight: var(--os-font-weight-medium); letter-spacing: 0; }
+    .docs-table td[data-label][data-empty] { display: none; }
+  }
+
+  /* ---------- Previous and next ---------- */
+
+  .docs-pager { display: flex; justify-content: space-between; gap: 16px; margin-top: 64px; padding-top: 20px; border-top: 1px solid var(--docs-line); }
+  .docs-pager-link {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+    margin-inline: -12px;
+    padding: 8px 12px;
+    border-radius: var(--docs-radius-control);
+    color: var(--os-color-fg-base);
+    text-decoration: none;
+    transition: background-color var(--docs-time) var(--docs-ease);
+  }
+  .docs-pager-link[data-direction="next"] { margin-inline-start: auto; justify-items: end; text-align: end; }
+  .docs-pager-link:hover { background: var(--docs-fill-hover); }
+  .docs-pager-link:active { background: var(--docs-fill-press); }
+  .docs-pager-label { color: var(--os-color-fg-subtle); font-size: var(--os-font-size-xs); font-weight: var(--os-font-weight-medium); line-height: 16px; letter-spacing: 0; }
+  .docs-pager-title { display: inline-flex; align-items: center; gap: 6px; min-width: 0; font-size: var(--os-font-size-sm); font-weight: var(--os-font-weight-medium); line-height: 20px; }
+  .docs-pager-title svg { flex: none; color: var(--os-color-fg-subtle); }
+
+  /* ---------- Actions and cards (used by the pages) ---------- */
+
+  .docs-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 24px 0 16px; }
+  .docs-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 36px;
+    padding-inline: 14px;
+    border-radius: var(--os-radius-md);
+    font-size: var(--os-font-size-sm);
+    font-weight: var(--os-font-weight-medium);
+    line-height: 20px;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background-color var(--docs-time) var(--docs-ease);
+  }
+  .docs-button[data-variant="primary"] { background: var(--os-color-bg-contrast); color: var(--os-color-fg-on-contrast); }
+  .docs-button[data-variant="primary"]:hover { background: color-mix(in oklab, var(--os-color-bg-contrast) 86%, var(--os-color-bg-canvas)); }
+  .docs-button[data-variant="primary"]:active { background: color-mix(in oklab, var(--os-color-bg-contrast) 74%, var(--os-color-bg-canvas)); }
+  .docs-button[data-variant="secondary"] { background: var(--docs-fill); color: var(--os-color-fg-base); }
+  .docs-button[data-variant="secondary"]:hover { background: var(--docs-fill-press); }
+  .docs-button[data-variant="secondary"]:active { background: color-mix(in oklab, var(--os-color-fg-base) 14%, transparent); }
+
+  .docs-prose .docs-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 0 0 16px; padding: 0; list-style: none; }
+  .docs-card {
+    display: grid;
+    align-content: start;
+    gap: 4px;
+    height: 100%;
+    padding: 16px;
+    border-radius: var(--os-radius-lg);
+    background: var(--os-color-bg-subtle);
+    color: var(--os-color-fg-base);
+    text-decoration: none;
+    transition: background-color var(--docs-time) var(--docs-ease);
+  }
+  .docs-card:hover { background: color-mix(in oklab, var(--os-color-fg-base) 4%, var(--os-color-bg-subtle)); }
+  .docs-card:active { background: color-mix(in oklab, var(--os-color-fg-base) 8%, var(--os-color-bg-subtle)); }
+  .docs-card-title { font-size: var(--os-font-size-sm); font-weight: var(--os-font-weight-medium); line-height: 20px; }
+  .docs-card-text { color: var(--os-color-fg-muted); font-size: var(--os-font-size-sm); line-height: 20px; text-wrap: pretty; }
+
+  /* ---------- Search ---------- */
+
+  .docs-palette-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: clamp(16px, 14vh, 128px) 16px 16px;
+    background: var(--os-color-bg-overlay);
+  }
+  .docs-palette-overlay[data-entering] { animation: docs-fade-in var(--docs-time-enter) var(--docs-ease); }
+  .docs-palette {
+    display: flex;
+    width: min(100%, 560px);
+    max-height: min(100%, 448px);
+    overflow: hidden;
+    border-radius: var(--os-radius-lg);
+    background: var(--os-color-bg-surface);
+    box-shadow: 0 0 0 1px var(--docs-line), var(--os-shadow-popup);
+  }
+  /* On a dark canvas a panel reads as raised by being lighter, not by its shadow. */
+  :root[data-ui-theme="dark"] .docs-palette { --docs-line: var(--os-color-border-subtle); background: var(--os-color-bg-subtle); }
+  .docs-palette[data-entering] { animation: docs-rise-in var(--docs-time-enter) var(--docs-ease); }
+  .docs-palette-dialog { display: flex; flex: 1; flex-direction: column; min-width: 0; min-height: 0; }
+
+  .docs-palette-field {
+    display: flex;
+    align-items: center;
+    flex: none;
+    gap: 12px;
+    height: 52px;
+    /* 18px puts the left of the magnifier on the same line as the titles below it. */
+    padding-inline: 18px 16px;
+    border-bottom: 1px solid var(--docs-line);
+    color: var(--os-color-fg-subtle);
+  }
+  .docs-palette-field svg { flex: none; }
+  /* The whole dialog is the search field while it is open; the caret marks focus. */
+  .docs-palette-field .docs-palette-input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    background: transparent;
+    color: var(--os-color-fg-base);
+    font-size: var(--os-font-size-md);
+    letter-spacing: inherit;
+    outline: none;
+  }
+  .docs-palette-input::placeholder { color: var(--os-color-fg-subtle); opacity: 1; }
+  .docs-palette-close { height: 24px; padding-inline: 7px; border-radius: var(--os-radius-sm); cursor: pointer; transition: color var(--docs-time) var(--docs-ease), background-color var(--docs-time) var(--docs-ease); }
+  .docs-palette-close:hover { background: var(--docs-fill); color: var(--os-color-fg-base); }
+  .docs-palette-close:active { background: var(--docs-fill-press); }
+
+  .docs-palette-list { flex: 1; min-height: 0; padding: 8px; overflow-y: auto; overscroll-behavior: contain; scroll-padding-block: 8px; outline: none; scrollbar-width: thin; scrollbar-color: var(--os-color-border-muted) transparent; }
+  .docs-palette-group + .docs-palette-group { margin-top: 8px; }
+  .docs-palette-label { padding: 6px 12px 4px; color: var(--os-color-fg-subtle); font-size: var(--os-font-size-xs); font-weight: var(--os-font-weight-medium); line-height: 16px; letter-spacing: 0; }
+  .docs-palette-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    height: 36px;
+    padding-inline: 12px;
+    border-radius: var(--docs-radius-control);
+    color: var(--os-color-fg-base);
+    font-size: var(--os-font-size-sm);
+    line-height: 20px;
+    cursor: pointer;
+    outline: none;
+  }
+  .docs-palette-item[data-hovered] { background: var(--docs-fill-hover); }
+  .docs-palette-item[data-focused] { background: var(--docs-fill); }
+  .docs-palette-item[data-pressed] { background: var(--docs-fill-press); }
+  .docs-palette-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .docs-palette-hint { flex: none; color: var(--os-color-fg-subtle); font-size: var(--os-font-size-xs); line-height: 16px; letter-spacing: 0; }
+  .docs-palette-empty { margin: 0; padding: 32px 16px; color: var(--os-color-fg-muted); font-size: var(--os-font-size-sm); line-height: 20px; text-align: center; }
+  .docs-palette-foot {
+    display: flex;
+    align-items: center;
+    flex: none;
+    gap: 16px;
+    height: 40px;
+    padding-inline: 16px;
+    border-top: 1px solid var(--docs-line);
+    color: var(--os-color-fg-subtle);
+    font-size: var(--os-font-size-xs);
+    line-height: 16px;
+    letter-spacing: 0;
+  }
+  .docs-palette-foot span { display: inline-flex; align-items: center; gap: 4px; }
+  .docs-palette-foot .docs-kbd:last-of-type { margin-inline-end: 2px; }
+
+  /* ---------- Phone sheet ---------- */
+
+  .docs-sheet-overlay { position: fixed; inset: 0; z-index: 50; background: var(--os-color-bg-canvas); }
+  .docs-sheet-overlay[data-entering] { animation: docs-sheet-in var(--docs-time-enter) var(--docs-ease); }
+  .docs-sheet-overlay[data-exiting] { animation: docs-sheet-in var(--docs-time) var(--docs-ease) reverse; }
+  .docs-sheet,
+  .docs-sheet-dialog { height: 100%; }
+  .docs-sheet-dialog { display: flex; flex-direction: column; }
+  .docs-sheet-bar {
+    display: flex;
+    align-items: center;
+    flex: none;
+    /* The same spacing as the header on a phone, so the brand does not move when the sheet opens. */
+    gap: 4px;
+    height: var(--docs-header-height);
+    padding: 1px 16px 0;
+    border-bottom: 1px solid var(--docs-line);
+  }
+  .docs-sheet-scroll { flex: 1; min-height: 0; padding: 20px 4px 40px; overflow-y: auto; overscroll-behavior: contain; }
+  .docs-sheet-scroll .docs-nav-label { padding-inline: 12px; }
+  .docs-sheet-scroll .docs-nav-link { height: 40px; padding: 10px 12px; font-size: var(--os-font-size-md); }
+  .docs-sheet-extra { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--docs-line); }
+
+  @keyframes docs-fade-in { from { opacity: 0; } }
+  @keyframes docs-rise-in { from { opacity: 0; transform: translateY(8px) scale(.985); } }
+  @keyframes docs-sheet-in { from { opacity: 0; transform: translateY(-8px); } }
+
+  /* ---------- Customize: header button, shared-theme banner, wide pages ---------- */
+
+  .docs-customize-button { position: relative; }
+  .docs-customize-dot {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 6px;
+    height: 6px;
+    border-radius: var(--os-radius-full);
+    background: var(--os-color-accent-moderate);
+    box-shadow: 0 0 0 1.5px var(--os-color-bg-canvas);
+  }
+  .docs-shared-banner { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
+  .docs-shared-banner > span:first-child { flex: 1 1 240px; }
+  .docs-shared-banner-actions { display: flex; gap: 8px; }
+  /* A wide page has no "On this page" column and spans both columns. */
+  .docs-shell[data-layout="wide"] .docs-page { max-width: 1200px; }
+  .docs-shell[data-layout="wide"] .docs-page-head { max-width: var(--docs-measure); }
+  .docs-shell[data-layout="wide"] .docs-aside { display: none; }
+
+  /* ---------- Widths ---------- */
+
+  @media (min-width: 1280px) {
+    .docs-shell { grid-template-columns: var(--docs-sidebar-width) minmax(0, 1fr) var(--docs-aside-width); }
+    .docs-aside { display: block; }
+    .docs-shell[data-layout="wide"] { grid-template-columns: var(--docs-sidebar-width) minmax(0, 1fr); }
+  }
+
+  @media (max-width: 1023px) {
+    :root { --docs-sidebar-width: 208px; --docs-column-gap: 32px; }
+    .docs-search { width: 200px; }
+  }
+
+  @media (max-width: 767px) {
+    :root { --docs-gutter: 16px; --docs-page-top: 32px; }
+    .docs-shell { display: block; }
+    .docs-sidebar { display: none; }
+    .docs-main { padding-bottom: 64px; }
+
+    /* Touch targets grow to 36px; the search field folds down to its icon. The buttons at either
+       end hang 10px into the gutter, so their 16px icons, not their hit areas, sit on its lines. */
+    .docs-header-inner { gap: 4px; }
+    .docs-header-actions { margin-inline-end: -10px; }
+    .docs-menu-button { display: inline-grid; margin-inline-start: -10px; }
+    .docs-icon-button { width: 36px; height: 36px; }
+    .docs-brand { margin-inline-start: 0; }
+    .docs-brand-logo-long, .docs-brand-name { display: none; }
+    .docs-brand-logo-small { display: block; }
+    .docs-header-link { display: none; }
+    .docs-customize-button { display: none; }
+    .docs-search { justify-content: center; width: 36px; height: 36px; margin-inline-end: 0; padding: 0; background: transparent; }
+    .docs-search:hover { background: var(--docs-fill); }
+    .docs-search:active { background: var(--docs-fill-press); }
+    .docs-search-label,
+    .docs-search .docs-kbd { display: none; }
+
+    .docs-title { font-size: 28px; line-height: 32px; }
+    .docs-page-head .docs-lead,
+    .docs-prose > .docs-lead { font-size: 16px; line-height: 24px; }
+    .docs-stage { padding: 24px 16px; }
+    .docs-code pre { padding-inline-start: 16px; }
+    .docs-steps > li { padding-inline-start: 36px; }
+    .docs-prose .docs-cards { grid-template-columns: minmax(0, 1fr); }
+
+    .docs-palette-overlay { padding-top: 16px; }
+    .docs-palette { max-height: min(100%, 420px); }
+    /* 16px keeps iOS from zooming the page when the field takes focus. */
+    .docs-palette-field .docs-palette-input { font-size: 16px; }
+    .docs-palette-item { height: 40px; }
+    .docs-palette-foot { display: none; }
+
+    .docs-sheet-bar .docs-icon-button { margin-inline-start: -10px; }
+    .docs-sheet-scroll { padding-inline: 4px; }
+  }
+}

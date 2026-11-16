@@ -1,0 +1,625 @@
+/*
+  Otherstates UI homepage (/).
+
+  Plain CSS on the --os-* tokens, in the same "docs" layer as the docs site: index.html orders it after
+  the reset and before StyleX, so a component's own styles always win over the page around it.
+  No raw color values: every fill is a token or ink mixed from one. Corners follow the radius tokens,
+  so a Customize corner setting reaches the page frame too.
+
+  Contents: tokens and base · header · hero and state sheet · sections · state cards · kit · foundations · questions ·
+  footer · touch · narrow screens.
+*/
+
+@layer docs {
+  /* ---------- Tokens and base ---------- */
+
+  :root {
+    color-scheme: light;
+    --home-line: var(--os-color-border-subtle);
+    --home-fill: color-mix(in oklab, var(--os-color-fg-base) 5%, transparent);
+    --home-fill-press: color-mix(in oklab, var(--os-color-fg-base) 9%, transparent);
+    /* The docs' nesting: a canvas card around a subtle stage. The examples on the stages were drawn for
+       the docs stage, so filled cards like ApprovalCard keep their edge here too. */
+    --home-card: var(--os-color-bg-canvas);
+    --home-stage: var(--os-color-bg-subtle);
+    /* One corner for every page surface; what sits inside one is that corner minus its inset. */
+    --home-radius: var(--os-radius-2xl);
+    --home-inset: 6px;
+    --home-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    --home-time: var(--os-motion-hover);
+    --home-time-move: var(--os-motion-popup);
+    --home-ease: var(--os-ease-settle);
+    --home-gutter: 24px;
+    --home-header: 64px;
+    background: var(--os-color-bg-canvas);
+    color: var(--os-color-fg-base);
+  }
+
+  /* A control that takes focus never lands under the sticky header. */
+  html { scroll-padding-top: calc(var(--home-header) + 16px); }
+
+  :root[data-ui-theme="dark"] {
+    color-scheme: dark;
+    --home-fill: color-mix(in oklab, var(--os-color-fg-base) 8%, transparent);
+    --home-fill-press: color-mix(in oklab, var(--os-color-fg-base) 13%, transparent);
+    /* The dark border token is drawn for controls; as a page hairline it sits part of the way back. */
+    --home-line: color-mix(in oklab, var(--os-color-border-subtle) 64%, var(--os-color-bg-canvas));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :root { --home-time: 0ms; --home-time-move: 0ms; }
+  }
+
+  .home {
+    min-height: 100dvh;
+    overflow-x: clip;
+    font: var(--os-font-weight-regular) var(--os-font-size-md)/1.6 var(--os-font-family);
+    letter-spacing: -0.006em;
+  }
+
+  .home-wrap {
+    width: 100%;
+    max-width: calc(1088px + 2 * var(--home-gutter));
+    margin-inline: auto;
+    padding-inline: var(--home-gutter);
+  }
+
+  .home main:focus { outline: none; }
+
+  .home-skip {
+    position: absolute;
+    z-index: 60;
+    top: 12px;
+    left: 16px;
+    padding: 8px 12px;
+    border-radius: var(--os-radius-sm);
+    background: var(--os-color-bg-contrast);
+    color: var(--os-color-fg-on-contrast);
+    font-size: var(--os-font-size-sm);
+    font-weight: var(--os-font-weight-medium);
+    text-decoration: none;
+    transform: translateY(-64px);
+  }
+  .home-skip:focus-visible { transform: none; }
+
+  /* ---------- Header ---------- */
+
+  .home-header {
+    position: sticky;
+    z-index: 50;
+    top: 0;
+    background: color-mix(in oklab, var(--os-color-bg-canvas) 84%, transparent);
+    -webkit-backdrop-filter: saturate(1.6) blur(16px);
+    backdrop-filter: saturate(1.6) blur(16px);
+  }
+  .home-header-inner { display: flex; align-items: center; gap: 28px; height: var(--home-header); }
+
+  .home-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    height: 32px;
+    margin-inline-start: -4px;
+    padding-inline: 4px 6px;
+    border-radius: var(--os-radius-sm);
+    color: var(--os-color-fg-base);
+    text-decoration: none;
+    transition: opacity var(--home-time) var(--home-ease);
+  }
+  /* The logo is a mask over the text color, so it follows light and dark. 2297 x 280. It may shrink on
+     the narrowest phones: the mask keeps its proportions. */
+  .home-brand-logo {
+    display: block;
+    flex: 0 1 auto;
+    width: calc(18px * 2297 / 280);
+    min-width: 0;
+    height: 18px;
+    background: currentColor;
+    -webkit-mask: var(--home-logo) left center / contain no-repeat;
+    mask: var(--home-logo) left center / contain no-repeat;
+  }
+  .home-brand-name {
+    flex: none;
+    color: var(--os-color-fg-muted);
+    font-size: var(--os-font-size-md);
+    font-weight: var(--os-font-weight-medium);
+    line-height: 20px;
+    letter-spacing: -0.02em;
+  }
+
+  .home-nav { display: flex; gap: 2px; }
+  .home-nav a {
+    padding: 6px 10px;
+    border-radius: var(--os-radius-sm);
+    color: var(--os-color-fg-muted);
+    font-size: var(--os-font-size-sm);
+    font-weight: var(--os-font-weight-medium);
+    line-height: 20px;
+    text-decoration: none;
+    transition: background-color var(--home-time) var(--home-ease), color var(--home-time) var(--home-ease);
+  }
+  .home-nav a:active { background: var(--home-fill-press); }
+
+  .home-header-actions { display: flex; flex: none; align-items: center; gap: 8px; margin-inline-start: auto; }
+  .home-icon-button {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--os-radius-control);
+    background: transparent;
+    color: var(--os-color-fg-muted);
+    cursor: pointer;
+    transition: background-color var(--home-time) var(--home-ease), color var(--home-time) var(--home-ease);
+  }
+  .home-icon-button:active { background: var(--home-fill-press); }
+
+  /* ---------- Hero ---------- */
+
+  /* Copy on the left, the state sheet on the right: a design file's variant grid more than a poster. */
+  .home-hero { padding-block: 96px 72px; }
+  .home-hero-inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr);
+    gap: 56px;
+    align-items: center;
+  }
+  .home-hero-copy { display: flex; flex-direction: column; align-items: flex-start; }
+
+  .home-title {
+    margin: 0;
+    font-size: clamp(44px, 5vw, 64px);
+    font-weight: var(--os-font-weight-semibold);
+    line-height: 1.02;
+    letter-spacing: -0.04em;
+  }
+  .home-lead {
+    max-width: 480px;
+    margin: 24px 0 0;
+    color: var(--os-color-fg-muted);
+    font-size: var(--os-font-size-lg);
+    line-height: 28px;
+    letter-spacing: -0.01em;
+    text-wrap: pretty;
+  }
+  .home-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
+
+  /* What it runs on: a plain sentence, each framework a link to its setup. */
+  .home-compat {
+    margin: 28px 0 0;
+    color: var(--os-color-fg-subtle);
+    font-size: var(--os-font-size-sm);
+    line-height: 20px;
+  }
+  .home-compat a {
+    position: relative;
+    color: var(--os-color-fg-base);
+    font-weight: var(--os-font-weight-medium);
+    text-decoration: underline;
+    text-decoration-color: var(--home-line);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
+    transition: text-decoration-color var(--home-time) var(--home-ease);
+  }
+
+  /* The state sheet: six cells on one ruled grid, with crop marks at its corners like the brackets in the
+     logo. Each cell names its state at the top and its component at the bottom, as a variant would. */
+  .home-sheet {
+    --home-crop: 14px;
+    --home-crop-gap: 10px;
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1px;
+    margin: calc(var(--home-crop-gap) + 1px);
+    padding: 1px;
+    border-radius: var(--os-radius-xs);
+    background: var(--home-line);
+  }
+  .home-sheet::before {
+    content: "";
+    position: absolute;
+    inset: calc(-1 * var(--home-crop-gap));
+    pointer-events: none;
+    --c: linear-gradient(var(--os-color-fg-base) 0 0);
+    background:
+      var(--c) top left / var(--home-crop) 1.5px, var(--c) top left / 1.5px var(--home-crop),
+      var(--c) top right / var(--home-crop) 1.5px, var(--c) top right / 1.5px var(--home-crop),
+      var(--c) bottom left / var(--home-crop) 1.5px, var(--c) bottom left / 1.5px var(--home-crop),
+      var(--c) bottom right / var(--home-crop) 1.5px, var(--c) bottom right / 1.5px var(--home-crop);
+    background-repeat: no-repeat;
+  }
+  .home-sheet-cell {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    gap: 8px;
+    min-width: 0;
+    min-height: 152px;
+    padding: 12px 14px;
+    /* A faint dot grid, the canvas a variant sits on. */
+    background:
+      radial-gradient(circle at 1px 1px, color-mix(in oklab, var(--os-color-fg-base) 9%, transparent) 1px, transparent 1.5px) 0 0 / 12px 12px,
+      var(--os-color-bg-canvas);
+  }
+  .home-sheet-cell:first-child { border-start-start-radius: var(--os-radius-xs); }
+  .home-sheet-cell:nth-child(3) { border-start-end-radius: var(--os-radius-xs); }
+  .home-sheet-cell:nth-child(4) { border-end-start-radius: var(--os-radius-xs); }
+  .home-sheet-cell:last-child { border-end-end-radius: var(--os-radius-xs); }
+  .home-sheet-state,
+  .home-sheet-name {
+    overflow: hidden;
+    font-family: var(--home-mono);
+    font-size: var(--os-font-size-xs);
+    line-height: 16px;
+    letter-spacing: 0;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  .home-sheet-state { color: var(--os-color-fg-base); }
+  .home-sheet-name { color: var(--os-color-fg-subtle); }
+  .home-sheet-specimen {
+    display: grid;
+    place-items: center;
+    min-width: 0;
+    font: var(--os-font-weight-regular) 16px/1.5 var(--os-font-family);
+    letter-spacing: normal;
+  }
+  .home-sheet-lines { width: 76px; }
+
+  /* One column: the copy, then the sheet under it. */
+  @media (max-width: 1023px) {
+    .home-hero-inner { grid-template-columns: minmax(0, 1fr); gap: 48px; }
+    .home-sheet { max-width: 640px; }
+  }
+
+  /* ---------- Sections ---------- */
+
+  .home-section { padding-block: 72px; }
+  .home-section-head { max-width: 640px; margin-bottom: 40px; }
+  .home-h2 {
+    margin: 0;
+    font-size: clamp(30px, 3.6vw, 44px);
+    font-weight: var(--os-font-weight-semibold);
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    text-wrap: balance;
+  }
+  .home-section-lead {
+    margin: 16px 0 0;
+    color: var(--os-color-fg-muted);
+    font-size: 17px;
+    line-height: 26px;
+    letter-spacing: -0.01em;
+    text-wrap: pretty;
+  }
+
+  .home-icon-tile {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--os-radius-md);
+    background: var(--os-color-bg-muted);
+    color: var(--os-color-fg-muted);
+  }
+
+  /* ---------- State cards ---------- */
+
+  .home-grid {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 16px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .home-card {
+    display: flex;
+    flex-direction: column;
+    grid-column: span 2;
+    min-width: 0;
+    padding: var(--home-inset);
+    border-radius: var(--home-radius);
+    background: var(--home-card);
+    box-shadow: inset 0 0 0 1px var(--home-line);
+  }
+  .home-card[data-width="wide"] { grid-column: span 3; }
+  /* A card whose control is open sits above its neighbors. */
+  .home-card:focus-within { position: relative; z-index: 2; }
+
+  .home-card-stage {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    min-height: 260px;
+    padding: 16px 20px 28px;
+    border-radius: calc(var(--home-radius) - var(--home-inset));
+    background: var(--home-stage);
+  }
+
+  /* The switch keeps every label whole: on a narrow card it scrolls sideways, and the card scrolls the
+     chosen state into view. */
+  .home-card-switch {
+    display: flex;
+    max-width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .home-card-switch::-webkit-scrollbar { display: none; }
+  /* The control fills its parent, so the parent takes the labels' own width. */
+  .home-card-switch-fit { flex: none; width: max-content; margin-inline: auto; }
+
+  /* Every state shares one grid cell, so the cell is as tall as the tallest state. The component sits
+     in the middle of it, with the library's own base type. */
+  .home-card-preview {
+    display: grid;
+    flex: 1;
+    width: 100%;
+    min-width: 0;
+    color: var(--os-color-fg-base);
+    font: var(--os-font-weight-regular) 16px/1.5 var(--os-font-family);
+    letter-spacing: normal;
+  }
+  .home-card-state {
+    display: flex;
+    grid-area: 1 / 1;
+    align-items: center;
+    align-items: safe center;
+    justify-content: center;
+    min-width: 0;
+    visibility: hidden;
+  }
+  .home-card-state[data-current] { visibility: visible; }
+  .home-card-state > * { max-width: 100%; }
+  .home-card-error { margin: 0; color: var(--os-color-fg-muted); font-size: var(--os-font-size-sm); }
+
+  .home-card-foot {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: var(--home-inset);
+    padding: 10px 12px;
+    border-radius: calc(var(--home-radius) - var(--home-inset));
+    color: inherit;
+    text-decoration: none;
+    transition: background-color var(--home-time) var(--home-ease);
+  }
+  .home-card-foot:active { background: var(--home-fill-press); }
+  .home-card-foot > svg { flex: none; color: var(--os-color-fg-subtle); transition: transform var(--home-time-move) var(--home-ease), color var(--home-time) var(--home-ease); }
+  /* Room for the title and two lines of description, so feet in one row line up. */
+  .home-card-text { display: flex; flex: 1; flex-direction: column; justify-content: center; min-width: 0; min-height: 56px; }
+  .home-card-title { color: var(--os-color-fg-base); font-size: var(--os-font-size-sm); font-weight: var(--os-font-weight-medium); line-height: 20px; }
+  .home-card-desc { color: var(--os-color-fg-muted); font-size: var(--os-font-size-caption); line-height: 18px; letter-spacing: 0; }
+
+  .home-more { display: flex; justify-content: center; margin-top: 32px; }
+
+  /* ---------- Kit ---------- */
+
+  .home-steps {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--home-line);
+    list-style: none;
+  }
+  .home-step {
+    display: flex;
+    flex-direction: column;
+    padding-block: 20px 4px;
+    padding-inline: 0 28px;
+  }
+  .home-step + .home-step { padding-inline-start: 28px; border-inline-start: 1px solid var(--home-line); }
+  .home-step-number {
+    color: var(--os-color-fg-subtle);
+    font: var(--os-font-size-xs)/16px var(--home-mono);
+    letter-spacing: 0;
+  }
+  .home-step-title { margin: 12px 0 4px; font-size: var(--os-font-size-body); font-weight: var(--os-font-weight-semibold); line-height: 24px; letter-spacing: -0.01em; }
+  .home-step-text { margin: 0; color: var(--os-color-fg-muted); font-size: var(--os-font-size-sm); line-height: 21px; }
+  .home-step-code {
+    display: block;
+    margin-top: auto;
+    padding: 8px 12px;
+    overflow-x: auto;
+    border-radius: var(--os-radius-md);
+    background: var(--home-stage);
+    color: var(--os-color-fg-base);
+    font: var(--os-font-size-caption)/20px var(--home-mono);
+    letter-spacing: 0;
+    white-space: nowrap;
+  }
+  .home-step-text + .home-step-code { margin-top: 16px; }
+
+  .home-terminal {
+    margin: 32px 0 0;
+    overflow: hidden;
+    border-radius: var(--home-radius);
+    background: var(--home-card);
+    box-shadow: inset 0 0 0 1px var(--home-line);
+  }
+  .home-terminal-head,
+  .home-terminal-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 16px;
+    margin: 0;
+    padding: 14px 24px;
+    color: var(--os-color-fg-muted);
+    font-size: var(--os-font-size-caption);
+    line-height: 20px;
+    letter-spacing: 0;
+  }
+  .home-terminal-head { border-bottom: 1px solid var(--home-line); font-weight: var(--os-font-weight-medium); }
+  .home-terminal-foot { border-top: 1px solid var(--home-line); font-family: var(--home-mono); }
+  .home-terminal-command { color: var(--os-color-fg-subtle); font-weight: var(--os-font-weight-regular); }
+  .home-terminal-body {
+    padding: 16px 24px;
+    overflow-x: auto;
+    background: var(--home-stage);
+    font: var(--os-font-size-caption)/24px var(--home-mono);
+    letter-spacing: 0;
+  }
+  .home-terminal-line { margin: 0 0 4px; color: var(--os-color-fg-base); white-space: nowrap; }
+  .home-terminal-list { margin: 0; padding: 0; list-style: none; }
+  .home-finding {
+    display: grid;
+    grid-template-columns: 17ch 5ch 14ch max-content;
+    gap: 0 16px;
+    white-space: nowrap;
+  }
+  .home-finding-at { color: var(--os-color-fg-subtle); }
+  .home-finding-level { color: var(--os-color-fg-error); }
+  .home-finding-rule { color: var(--os-color-fg-base); font-weight: var(--os-font-weight-medium); }
+  .home-finding-message { color: var(--os-color-fg-muted); }
+  .home-finding-fix { color: var(--os-color-fg-subtle); }
+
+  /* ---------- Foundations ---------- */
+
+  .home-foundations {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .home-foundation {
+    padding: 24px;
+    border-radius: var(--home-radius);
+    background: var(--home-card);
+    box-shadow: inset 0 0 0 1px var(--home-line);
+  }
+  .home-foundation-title { margin: 16px 0 6px; font-size: var(--os-font-size-body); font-weight: var(--os-font-weight-semibold); line-height: 24px; letter-spacing: -0.01em; }
+  .home-foundation-text { max-width: 460px; margin: 0; color: var(--os-color-fg-muted); font-size: var(--os-font-size-sm); line-height: 22px; }
+
+  /* ---------- Questions ---------- */
+
+  .home-faq {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+    gap: 24px 64px;
+    align-items: start;
+  }
+
+  /* ---------- Footer ---------- */
+
+  .home-footer { margin-top: 48px; padding-block: 48px 72px; border-top: 1px solid var(--home-line); }
+  .home-footer-inner { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 40px 64px; }
+  .home-footer-brand { color: var(--os-color-fg-base); }
+  .home-footer-brand .home-brand-logo { width: calc(16px * 2297 / 280); height: 16px; }
+  .home-footer-brand p { margin: 12px 0 0; color: var(--os-color-fg-muted); font-size: var(--os-font-size-sm); line-height: 20px; }
+  .home-footer-brand p + p { margin-top: 4px; color: var(--os-color-fg-subtle); }
+  .home-footer-brand a {
+    color: var(--os-color-fg-muted);
+    text-decoration: underline;
+    text-decoration-color: var(--home-line);
+    text-underline-offset: 3px;
+    transition: text-decoration-color var(--home-time) var(--home-ease);
+  }
+  .home-footer-links { display: flex; gap: 64px; }
+  .home-footer-links h2 { margin: 0 0 12px; color: var(--os-color-fg-subtle); font-size: var(--os-font-size-caption); font-weight: var(--os-font-weight-medium); line-height: 20px; letter-spacing: 0; }
+  .home-footer-links ul { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+  .home-footer-links a { position: relative; display: inline-block; color: var(--os-color-fg-muted); font-size: var(--os-font-size-sm); line-height: 20px; text-decoration: none; transition: color var(--home-time) var(--home-ease); }
+
+  /* ---------- Hover (pointers that hover only, so a tap leaves no fill behind) ---------- */
+
+  @media (hover: hover) {
+    .home-brand:hover { opacity: .76; }
+    .home-nav a:hover { background: var(--home-fill); color: var(--os-color-fg-base); }
+    .home-icon-button:hover { background: var(--home-fill); color: var(--os-color-fg-base); }
+    .home-compat a:hover,
+    .home-footer-brand a:hover { text-decoration-color: currentColor; }
+    .home-card-foot:hover { background: var(--home-fill); }
+    .home-card-foot:hover > svg { color: var(--os-color-fg-base); transform: translateX(2px); }
+    .home-footer-links a:hover { color: var(--os-color-fg-base); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .home-card-foot:hover > svg { transform: none; }
+  }
+
+  /* ---------- Touch: 44px targets on coarse pointers (spec 1.14) ---------- */
+
+  @media (pointer: coarse) {
+    .home-icon-button::after,
+    .home-footer-links a::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: max(100%, 44px);
+      height: max(100%, 44px);
+      transform: translate(-50%, -50%);
+    }
+    .home-footer-links ul { gap: 12px; }
+  }
+
+  /* ---------- Narrow screens ---------- */
+
+  @media (max-width: 959px) {
+    .home-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .home-card,
+    .home-card[data-width="wide"] { grid-column: span 2; }
+    .home-card[data-width="narrow"] { grid-column: span 1; }
+    .home-steps { grid-template-columns: minmax(0, 1fr); }
+    .home-step { padding-block: 20px 24px; padding-inline: 0; }
+    .home-step + .home-step { padding-inline-start: 0; border-inline-start: 0; border-top: 1px solid var(--home-line); }
+    .home-faq { grid-template-columns: minmax(0, 1fr); }
+  }
+
+  @media (max-width: 767px) {
+    :root { --home-gutter: 16px; }
+    .home-nav { display: none; }
+    .home-hero { padding-block: 64px 56px; }
+    .home-sheet { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .home-sheet-cell { min-height: 132px; }
+    .home-sheet-cell:nth-child(3) { border-start-end-radius: 0; }
+    .home-sheet-cell:nth-child(2) { border-start-end-radius: var(--os-radius-xs); }
+    .home-sheet-cell:nth-child(4) { border-end-start-radius: 0; }
+    .home-sheet-cell:nth-child(5) { border-end-start-radius: var(--os-radius-xs); }
+    .home-section { padding-block: 48px; }
+    .home-grid { grid-template-columns: minmax(0, 1fr); }
+    .home-card,
+    .home-card[data-width] { grid-column: auto; }
+    /* One column: no row to match, so a stage is only as tall as its content needs. */
+    .home-card-stage { min-height: 180px; padding-inline: 12px; }
+    .home-card-text { min-height: 0; }
+    /* The switch runs to the stage's edge and fades where more states are off to the side. */
+    .home-card-switch {
+      align-self: stretch;
+      max-width: none;
+      margin-inline: -12px;
+      padding-inline: 12px;
+      scroll-padding-inline: 12px;
+      -webkit-mask-image: linear-gradient(to right, transparent, currentColor 12px, currentColor calc(100% - 20px), transparent);
+      mask-image: linear-gradient(to right, transparent, currentColor 12px, currentColor calc(100% - 20px), transparent);
+    }
+    .home-foundations { grid-template-columns: minmax(0, 1fr); }
+    .home-footer-links { gap: 40px; }
+    /* The findings stack: where, then level and rule, then the message, which wraps. */
+    .home-terminal-head,
+    .home-terminal-foot,
+    .home-terminal-body { padding-inline: 16px; }
+    .home-terminal-line { white-space: normal; }
+    .home-finding {
+      grid-template-columns: max-content minmax(0, 1fr);
+      gap: 0 12px;
+      padding-block: 6px;
+      white-space: normal;
+    }
+    .home-finding-at,
+    .home-finding-message { grid-column: 1 / -1; }
+  }
+
+  @media (max-width: 359px) {
+    .home-header-inner { gap: 12px; }
+    .home-brand-name { display: none; }
+  }
+}

@@ -1,0 +1,7 @@
+# Uploads for `vercel deploy` from this machine: only what a clean clone has.
+node_modules
+dist
+output
+.visual
+plans
+*.tsbuildinfo

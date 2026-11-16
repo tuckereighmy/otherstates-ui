@@ -1,0 +1,888 @@
+/*
+  Styles for the pages in this folder (Overview and Foundations).
+
+  Same rules as catalog.css: plain CSS on the --os-* tokens, no raw color values, everything in
+  the "docs" layer so a component's own styles win inside a specimen. Classes start with "pg-".
+
+  Contents: shared parts · showcase · principles and browse · steps · styling · colors · type ·
+  spacing and sizing · radius · elevation · motion · icons · reduced motion · widths.
+*/
+
+@layer docs {
+  /* ---------- Shared parts ---------- */
+
+  /* Controls the pages draw inside [data-docs-raw] get the docs' focus ring. */
+  :is(.pg-token, .pg-tile-link, .pg-link, .pg-icon, .pg-filter-input, .pg-replay, .pg-press-sample):focus-visible {
+    outline: 2px solid var(--docs-ring);
+    outline-offset: 2px;
+  }
+
+  /* A token's name. It is a button: click to copy. The two labels share one cell, so the
+     width does not change while it says "Copied". The padding hangs outside the text so the
+     name lines up with the text around it; the hover fill shows the hit area. */
+  .pg-token-wrap { display: inline-flex; min-width: 0; max-width: 100%; }
+  .pg-token {
+    display: inline-grid;
+    justify-items: start;
+    min-width: 0;
+    max-width: calc(100% + 12px);
+    margin: -2px -6px;
+    padding: 2px 6px;
+    border-radius: max(var(--os-radius-xs), calc(var(--os-radius-sm) - 1px));
+    background: transparent;
+    color: var(--os-color-fg-base);
+    font: var(--os-font-weight-regular) 13px/20px var(--docs-mono);
+    letter-spacing: 0;
+    text-align: start;
+    cursor: pointer;
+    transition: background-color var(--docs-time) var(--docs-ease);
+  }
+  .pg-token > span { grid-area: 1 / 1; min-width: 0; overflow-wrap: anywhere; }
+  .pg-token-done { visibility: hidden; color: var(--os-color-fg-muted); font-family: var(--os-font-family); font-weight: var(--os-font-weight-medium); }
+  .pg-token[data-copied] .pg-token-text { visibility: hidden; }
+  .pg-token[data-copied] .pg-token-done { visibility: visible; }
+  .pg-token:hover { background: var(--docs-fill); }
+  .pg-token:active { background: var(--docs-fill-press); }
+
+  .pg-value {
+    color: var(--os-color-fg-muted);
+    font: var(--os-font-weight-regular) 13px/20px var(--docs-mono);
+    letter-spacing: 0;
+    font-variant-numeric: tabular-nums;
+    overflow-wrap: anywhere;
+  }
+  .pg-value-block { display: block; margin-top: 4px; font-size: var(--os-font-size-xs); line-height: 18px; }
+  .pg-layer { display: block; }
+  .pg-use { color: var(--os-color-fg-muted); font-size: var(--os-font-size-sm); line-height: 20px; letter-spacing: -0.006em; text-wrap: pretty; }
+  .pg-caption { color: var(--os-color-fg-subtle); font-size: var(--os-font-size-xs); font-weight: var(--os-font-weight-medium); line-height: 16px; letter-spacing: 0; }
+  .pg-inline-code {
+    padding: 1px 4px;
+    border-radius: var(--os-radius-xs);
+    background: var(--docs-fill);
+    color: var(--os-color-fg-base);
+    font: var(--os-font-weight-regular) 11.5px/16px var(--docs-mono);
+    letter-spacing: 0;
+  }
+
+  /* A list with a hairline between rows, in the rhythm of the props table. */
+  .pg-rows { margin: 0 0 16px; padding: 0; list-style: none; }
+  .pg-row {
+    display: grid;
+    align-items: center;
+    column-gap: 24px;
+    row-gap: 4px;
+    min-width: 0;
+    padding-block: 12px;
+    border-bottom: 1px solid var(--docs-line);
+  }
+  .pg-row:first-child { padding-top: 0; }
+  .pg-row:last-child { border-bottom-color: transparent; padding-bottom: 0; }
+  .pg-row > * { min-width: 0; }
+  .pg-token-row { grid-template-columns: 208px minmax(0, 1fr); align-items: baseline; }
+
+  /* A quiet panel for a live specimen: the stage's surface, without its fixed height. */
+  .pg-specimen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    margin: 0 0 16px;
+    padding: 32px;
+    border-radius: var(--os-radius-lg);
+    background: var(--os-color-bg-subtle);
+    color: var(--os-color-fg-base);
+    font: var(--os-font-weight-regular) 16px/1.5 var(--os-font-family);
+    letter-spacing: normal;
+  }
+  .pg-specimen[data-align="start"] { align-items: flex-start; }
+  .pg-specimen[data-align="stretch"] { align-items: stretch; }
+  .pg-specimen > * { max-width: 100%; }
+
+  /* A one-line state: the theme on screen, the reader's motion setting. */
+  .pg-theme-note,
+  .pg-state {
+    display: inline-flex;
+    /* The dot sits on the first line, wherever the text wraps. */
+    align-items: flex-start;
+    gap: 8px;
+    margin: 0 0 16px;
+    padding: 6px 12px 6px 10px;
+    /* Half the height of one line: a pill on one line, a soft panel if it ever wraps. */
+    border-radius: var(--os-radius-lg);
+    background: var(--docs-fill);
+    color: var(--os-color-fg-base);
+    font-size: 13px;
+    font-weight: var(--os-font-weight-medium);
+    line-height: 20px;
+    letter-spacing: 0;
+  }
+  .pg-theme-dot {
+    flex: none;
+    width: 10px;
+    height: 10px;
+    margin-top: 5px;
+    border-radius: var(--os-radius-full);
+    background: var(--os-color-bg-canvas);
+    box-shadow: inset 0 0 0 1.5px var(--os-color-fg-base);
+  }
+  .pg-theme-dot[data-theme="dark"] { background: var(--os-color-fg-base); }
+  .pg-state::before { content: ""; flex: none; width: 8px; height: 8px; margin-top: 6px; border-radius: var(--os-radius-full); background: var(--os-color-fg-disabled); }
+  .pg-state[data-on]::before { background: var(--os-color-fg-success); }
+
+  /* ---------- Showcase ---------- */
+
+  /* Six columns that the tiles span in twos and threes. The grid follows the width of the page
+     column, not the window: two columns when the column is narrow, one on a phone. */
+  .pg-bento { container: pg-bento / inline-size; margin: 8px 0 0; }
+  .pg-bento-grid {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-auto-rows: 184px;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .pg-tile {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    grid-column: span 2;
+    min-width: 0;
+    border-radius: var(--os-radius-lg);
+    background: var(--os-color-bg-subtle);
+  }
+  .pg-tile[data-columns="3"] { grid-column: span 3; }
+  .pg-tile[data-columns="4"] { grid-column: span 4; }
+  .pg-tile[data-columns="6"] { grid-column: span 6; }
+  .pg-tile[data-rows="2"] { grid-row: span 2; }
+  /* A tile whose control is open sits above its neighbors, so a list that unfolds over them is
+     not hidden underneath. */
+  .pg-tile:focus-within { z-index: 2; }
+
+  /* The component sits in the middle of what is left above its caption. It is shown as an app
+     would show it: the library's own base type, and never clipped. */
+  .pg-tile-stage {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    align-items: safe center;
+    justify-content: center;
+    justify-content: safe center;
+    min-width: 0;
+    min-height: 0;
+    padding: 24px 20px 0;
+    color: var(--os-color-fg-base);
+    font: var(--os-font-weight-regular) 16px/1.5 var(--os-font-family);
+    letter-spacing: normal;
+  }
+  .pg-tile-stage > * { max-width: 100%; }
+  .pg-tile-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; }
+  .pg-tile-error { margin: 0; color: var(--os-color-fg-muted); font-size: var(--os-font-size-sm); line-height: 20px; text-align: center; }
+
+  .pg-tile-link {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    flex: none;
+    gap: 4px;
+    height: 28px;
+    margin: 4px 8px 8px;
+    padding-inline: 8px;
+    border-radius: var(--os-radius-sm);
+    color: var(--os-color-fg-muted);
+    font-size: 13px;
+    font-weight: var(--os-font-weight-medium);
+    line-height: 20px;
+    letter-spacing: 0;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background-color var(--docs-time) var(--docs-ease), color var(--docs-time) var(--docs-ease);
+  }
+  .pg-tile-link svg { flex: none; color: var(--os-color-fg-subtle); transition: transform var(--docs-time-enter) var(--docs-ease), color var(--docs-time) var(--docs-ease); }
+  .pg-tile-link:not([data-static]):hover { background: var(--docs-fill); color: var(--os-color-fg-base); }
+  .pg-tile-link:not([data-static]):hover svg { color: var(--os-color-fg-base); transform: translateX(2px); }
+  .pg-tile-link:not([data-static]):active { background: var(--docs-fill-press); }
+
+  @container pg-bento (max-width: 679px) {
+    .pg-bento-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: auto; }
+    .pg-tile,
+    .pg-tile[data-columns] { grid-column: span 2; min-height: 184px; }
+    .pg-tile[data-rows="2"] { grid-row: auto; }
+    .pg-tile[data-columns="2"]:not([data-solo]) { grid-column: span 1; }
+    .pg-tile[data-rows="2"] .pg-tile-stage { padding-block: 28px 8px; }
+  }
+  @container pg-bento (max-width: 439px) {
+    .pg-bento-grid { grid-template-columns: minmax(0, 1fr); }
+    .pg-tile,
+    .pg-tile[data-columns],
+    .pg-tile[data-columns="2"]:not([data-solo]) { grid-column: auto; }
+    .pg-tile,
+    .pg-tile[data-columns] { min-height: 160px; }
+    .pg-tile-stage { padding-inline: 16px; }
+  }
+
+  /* ---------- Principles and browse ---------- */
+
+  .pg-principles {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 28px 40px;
+    margin: 20px 0 8px;
+    padding: 0;
+    list-style: none;
+  }
+  .pg-principle { display: grid; align-content: start; gap: 6px; min-width: 0; }
+  .pg-principle-title { margin: 0; color: var(--os-color-fg-base); font-size: var(--os-font-size-md); font-weight: var(--os-font-weight-semibold); line-height: 24px; letter-spacing: -0.011em; }
+  .pg-principle-text { margin: 0; color: var(--os-color-fg-muted); font-size: var(--os-font-size-md); line-height: 24px; letter-spacing: -0.006em; text-wrap: pretty; }
+
+  /* One row per category: the name on the left, its components flowing on the right. A hairline
+     marks where one category ends and the next begins. */
+  .pg-browse { margin: 8px 0 16px; }
+  .pg-browse-group {
+    display: grid;
+    grid-template-columns: 128px minmax(0, 1fr);
+    column-gap: 24px;
+    padding-block: 12px;
+    border-top: 1px solid var(--docs-line);
+  }
+  .pg-browse-group:last-child { padding-bottom: 0; }
+  .pg-browse-label {
+    margin: 0;
+    padding-block: 6px;
+    color: var(--os-color-fg-base);
+    font-size: var(--os-font-size-sm);
+    font-weight: var(--os-font-weight-medium);
+    line-height: 20px;
+    letter-spacing: -0.006em;
+  }
+
+  /* Rows hang 8px outside their column so their text, not their hover fill, lines up. */
+  .pg-links {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+    gap: 0 16px;
+    margin: 0 -8px;
+    padding: 0;
+    list-style: none;
+  }
+  .pg-link {
+    display: block;
+    height: 32px;
+    padding: 6px 8px;
+    overflow: hidden;
+    border-radius: var(--docs-radius-control);
+    color: var(--os-color-fg-muted);
+    font-size: var(--os-font-size-sm);
+    line-height: 20px;
+    letter-spacing: -0.006em;
+    text-decoration: none;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transition: background-color var(--docs-time) var(--docs-ease), color var(--docs-time) var(--docs-ease);
+  }
+  .pg-link:hover { background: var(--docs-fill-hover); color: var(--os-color-fg-base); }
+  .pg-link:active { background: var(--docs-fill-press); }
+
+  /* ---------- Steps with headings (Get started) ---------- */
+
+  /* A step's heading sits on the line of its number. */
+  .docs-prose .pg-steps { gap: 40px; margin-top: 20px; }
+  .docs-prose .pg-steps > li > h3:first-child { margin: 0 0 8px; line-height: 24px; }
+  .docs-prose .pg-steps > li > p { margin-bottom: 16px; }
+  .docs-prose .pg-steps > li > :is(ul, ol):not([class]) { margin-bottom: 16px; }
+  .docs-prose .pg-steps > li > .docs-code + p { margin-top: 0; }
+
+  /* ---------- Styling ---------- */
+
+  .docs-prose .pg-num { font-variant-numeric: tabular-nums; }
+  /* Names in a table carry no chip, so the gap between them does the separating. */
+  .docs-prose .pg-prefixes { display: flex; flex-wrap: wrap; gap: 0 12px; }
+  .docs-prose .pg-prefixes code { white-space: nowrap; }
+
+  .pg-theme-demo { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 0 0 16px; }
+  .pg-theme-pane { display: grid; align-content: start; gap: 10px; min-width: 0; }
+  .pg-theme-stage {
+    display: grid;
+    justify-items: center;
+    align-content: center;
+    gap: 20px;
+    min-height: 248px;
+    padding: 28px 16px;
+    border-radius: var(--os-radius-lg);
+    background: var(--os-color-bg-subtle);
+    color: var(--os-color-fg-base);
+    font: var(--os-font-weight-regular) 16px/1.5 var(--os-font-family);
+    letter-spacing: normal;
+  }
+  .pg-theme-stage > * { max-width: 100%; }
+  .pg-theme-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+
+  /* ---------- Colors ---------- */
+
+  .pg-color-group + .pg-color-group > h2:first-child { margin-top: 48px; }
+
+  .pg-swatches {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+    gap: 4px 24px;
+    margin: 0 0 16px;
+    padding: 0;
+    list-style: none;
+  }
+  .pg-swatch { display: grid; grid-template-columns: 40px minmax(0, 1fr); align-items: center; column-gap: 14px; min-width: 0; padding-block: 6px; }
+  /* The color is painted over a checkerboard, which only shows through a translucent value.
+     An ink ring keeps a swatch that matches the page from disappearing into it. */
+  .pg-swatch-chip {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--os-radius-md);
+    background:
+      linear-gradient(var(--pg-color), var(--pg-color)),
+      repeating-conic-gradient(var(--os-color-border-muted) 0 25%, var(--os-color-bg-canvas) 0 50%) 0 0 / 10px 10px;
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--os-color-fg-base) 12%, transparent);
+  }
+  .pg-swatch-chip[data-kind="paint"] { background: var(--pg-color); }
+  .pg-swatch-text { display: grid; justify-items: start; min-width: 0; }
+  .pg-swatch-text .pg-value { font-size: var(--os-font-size-xs); line-height: 16px; }
+  .pg-ratio { margin-inline-start: 8px; color: var(--os-color-fg-subtle); font-family: var(--os-font-family); white-space: nowrap; }
+
+  .pg-tones { display: grid; gap: 20px; margin: 0 0 16px; }
+  .pg-tone { display: grid; gap: 4px; min-width: 0; }
+  .pg-tone .pg-swatches { margin: 0; }
+  .pg-tone-label { margin: 0; color: var(--os-color-fg-subtle); font-size: var(--os-font-size-xs); font-weight: var(--os-font-weight-medium); line-height: 20px; letter-spacing: 0; }
+
+  .pg-badges { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; }
+  .pg-badges + .pg-badges { margin-top: 12px; }
+
+  /* ---------- Type ---------- */
+
+  .pg-face { display: grid; gap: 20px; width: 100%; }
+  .pg-face-sample { margin: 0; font: var(--os-font-weight-semibold) 52px/1 var(--os-font-family); letter-spacing: -0.03em; }
+  .pg-face-glyphs { margin: 0; color: var(--os-color-fg-muted); font: var(--os-font-weight-regular) var(--os-font-size-lg)/28px var(--os-font-family); letter-spacing: 0.01em; overflow-wrap: anywhere; }
+
+  .pg-type-row { grid-template-columns: 208px minmax(0, 1fr); align-items: baseline; padding-block: 20px; }
+  .pg-type-row:first-child { padding-top: 0; }
+  .pg-type-meta { display: grid; justify-items: start; gap: 2px; }
+  .pg-type-meta .pg-use { margin-top: 4px; font-size: 13px; line-height: 18px; }
+  .pg-type-sample { margin: 0; color: var(--os-color-fg-base); font-family: var(--os-font-family); letter-spacing: -0.011em; text-wrap: balance; overflow-wrap: anywhere; }
+  .pg-type-sample[data-large] { letter-spacing: -0.02em; }
+
+  /* Line heights: the sample's background is its line box, so the step reads as a height. */
+  .pg-leading-row { grid-template-columns: 208px 44px minmax(0, 1fr) minmax(0, 168px); }
+  .pg-leading-cell { display: flex; align-items: center; min-height: 28px; }
+  .pg-leading-sample {
+    display: block;
+    width: fit-content;
+    max-width: 100%;
+    padding-inline: 6px;
+    border-radius: var(--os-radius-xs, 4px);
+    background: var(--docs-fill);
+    color: var(--os-color-fg-base);
+    font-family: var(--os-font-family);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Tracking: the token beside no tracking, at the same size. */
+  .pg-tracking-row { grid-template-columns: 208px 64px minmax(0, 1fr) minmax(0, 168px); }
+  .pg-tracking-pair { display: grid; gap: 2px; color: var(--os-color-fg-base); font: var(--os-font-weight-medium) 15px/20px var(--os-font-family); }
+  .pg-tracking-pair > span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pg-tracking-plain { color: var(--os-color-fg-subtle); letter-spacing: 0; }
+
+  .pg-weights { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px 12px; margin: 20px 0 16px; padding: 0; list-style: none; }
+  .pg-weight { display: grid; align-content: start; justify-items: start; gap: 2px; min-width: 0; }
+  .pg-weight-sample {
+    display: grid;
+    place-items: center;
+    width: 100%;
+    height: 104px;
+    margin-bottom: 10px;
+    border-radius: var(--os-radius-lg);
+    background: var(--os-color-bg-subtle);
+    color: var(--os-color-fg-base);
+    font-family: var(--os-font-family);
+    font-size: 44px;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+  .pg-weight .pg-use { margin-top: 4px; }
+
+  .pg-roles .pg-row { grid-template-columns: 120px minmax(0, 1fr) 128px; align-items: baseline; padding-block: 16px; }
+  .pg-roles .pg-row:first-child { padding-top: 0; }
+  .pg-role-name { color: var(--os-color-fg-muted); font-size: 13px; font-weight: var(--os-font-weight-medium); line-height: 20px; letter-spacing: 0; }
+  .pg-role-sample { margin: 0; color: var(--os-color-fg-base); font-family: var(--os-font-family); text-wrap: balance; overflow-wrap: anywhere; }
+  .pg-role-spec { font-size: var(--os-font-size-xs); line-height: 16px; text-align: end; white-space: nowrap; }
+
+  .pg-figures { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; width: 100%; max-width: 400px; }
+  .pg-figure { display: grid; gap: 12px; min-width: 0; padding: 16px 20px 18px; border-radius: var(--os-radius-md); background: var(--os-color-bg-surface); box-shadow: var(--os-shadow-control); }
+  .pg-figure-list { display: grid; justify-items: end; margin: 0; padding: 0; list-style: none; font: var(--os-font-weight-medium) var(--os-font-size-xl)/32px var(--os-font-family); letter-spacing: 0; }
+  .pg-figure-list[data-tabular] { font-variant-numeric: tabular-nums; }
+
+  /* ---------- Spacing and sizing ---------- */
+
+  .pg-space-row { grid-template-columns: 136px 44px 64px minmax(0, 1fr); }
+  .pg-bar-track { display: flex; align-items: center; height: 20px; }
+  .pg-bar { width: var(--pg-size); height: 12px; border-radius: max(1px, calc(var(--os-radius-sm) / 3)); background: var(--os-color-fg-base); }
+
+  .pg-size-row { grid-template-columns: 48px 136px 44px minmax(0, 1fr); }
+  .pg-size-cell { display: grid; place-items: center; width: 48px; height: 48px; }
+  .pg-size-box {
+    width: var(--pg-size);
+    height: var(--pg-size);
+    border-radius: min(var(--os-radius-sm), calc(var(--pg-size) / 4));
+    background: color-mix(in oklab, var(--os-color-fg-base) 12%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--os-color-fg-base) 20%, transparent);
+  }
+
+  .pg-measured-row { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: center; gap: 32px; }
+  .pg-measured { display: grid; justify-items: center; gap: 12px; }
+  .pg-measured-target { display: flex; }
+  .pg-measured .pg-caption { display: inline-flex; align-items: center; gap: 6px; font-variant-numeric: tabular-nums; }
+
+  .pg-stroke-row { grid-template-columns: 136px 44px 64px minmax(0, 1fr); }
+  .pg-stroke-track { display: flex; align-items: center; height: 20px; }
+  .pg-stroke { width: 100%; height: var(--pg-size); background: var(--os-color-fg-base); }
+
+  /* ---------- Radius ---------- */
+
+  .pg-shapes {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 32px 12px;
+    margin: 20px 0 16px;
+    padding: 0;
+    list-style: none;
+  }
+  .pg-shape { display: grid; align-content: start; justify-items: start; gap: 2px; min-width: 0; }
+  .pg-shape-box {
+    width: 100%;
+    height: 80px;
+    margin-bottom: 12px;
+    border-radius: var(--pg-radius);
+    background: color-mix(in oklab, var(--os-color-fg-base) 8%, var(--os-color-bg-subtle));
+  }
+  .pg-shape .pg-use { margin-top: 4px; }
+
+  .pg-nest { display: grid; gap: 28px; justify-items: center; width: 100%; }
+  .pg-nest-control { display: grid; justify-items: center; gap: 10px; }
+  .pg-nest-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 208px)); justify-content: center; gap: 32px; width: 100%; }
+  .pg-nest-figure { display: grid; gap: 12px; min-width: 0; margin: 0; }
+  .pg-nest-outer {
+    padding: var(--pg-pad);
+    border-radius: var(--pg-outer);
+    background: var(--os-color-bg-surface);
+    box-shadow: var(--os-shadow-control);
+    transition: padding var(--os-motion-popup) var(--os-ease-settle);
+  }
+  .pg-nest-inner {
+    height: 96px;
+    /* The nesting rule: outer minus padding, never below the floor (radius-sm). */
+    border-radius: max(var(--pg-floor, 0px), calc(var(--pg-outer) - var(--pg-pad)));
+    background: color-mix(in oklab, var(--os-color-fg-base) 12%, var(--os-color-bg-surface));
+    transition: border-radius var(--os-motion-popup) var(--os-ease-settle);
+  }
+  .pg-nest-inner[data-same] { border-radius: var(--pg-outer); }
+  .pg-nest-figure figcaption { display: grid; justify-items: center; gap: 2px; text-align: center; }
+  .pg-nest-figure .pg-caption { font-variant-numeric: tabular-nums; }
+  .pg-nest-title { color: var(--os-color-fg-base); font: var(--os-font-weight-medium) var(--os-font-size-sm)/20px var(--os-font-family); letter-spacing: -0.006em; }
+
+  /* ---------- Elevation ---------- */
+
+  .pg-levels { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px 12px; margin: 20px 0 16px; padding: 0; list-style: none; }
+  .pg-level { display: grid; align-content: start; justify-items: start; gap: 2px; min-width: 0; }
+  /* Raised surfaces are shown where they really appear: on the page canvas, so each theme's
+     shadows read as they would in an app. A hairline marks the edge of the sample. The flat
+     sample is a panel, set apart by its fill alone. */
+  .pg-level-stage {
+    display: grid;
+    place-items: center;
+    width: 100%;
+    height: 160px;
+    margin-bottom: 12px;
+    border-radius: var(--os-radius-lg);
+    background: var(--os-color-bg-canvas);
+    box-shadow: inset 0 0 0 1px var(--docs-line);
+  }
+  .pg-level-card { width: 112px; height: 76px; border-radius: var(--os-radius-md); background: var(--os-color-bg-surface); box-shadow: var(--pg-shadow, none); }
+  .pg-level-card[data-flat] { background: var(--os-color-bg-subtle); }
+  .pg-level-card[data-hairline] { box-shadow: inset 0 0 0 1px var(--os-color-border-subtle), var(--pg-shadow, none); }
+  /* Surfaces: the stage takes the fill the level sits on, the card the level's own. */
+  .pg-level-stage[data-fill] { background: var(--pg-stage); }
+  .pg-level-card[data-fill] { background: var(--pg-fill); }
+  .pg-surfaces .pg-level-stage { height: 128px; }
+  .pg-surfaces .pg-level-card { width: 96px; height: 56px; }
+  .pg-level-name { color: var(--os-color-fg-base); font-size: var(--os-font-size-sm); font-weight: var(--os-font-weight-medium); line-height: 20px; }
+  .pg-level .pg-use { margin-top: 2px; }
+
+  .pg-focus { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px 12px; margin: 20px 0 16px; padding: 0; list-style: none; }
+  .pg-focus .pg-level-stage { height: 144px; }
+  .pg-ring-sample {
+    display: grid;
+    place-items: center;
+    height: 40px;
+    padding-inline: 20px;
+    border-radius: var(--os-radius-full);
+    background: var(--os-color-accent-moderate);
+    color: var(--os-color-accent-on-accent);
+    font: var(--os-font-weight-medium) var(--os-font-size-sm)/1 var(--os-font-family);
+    letter-spacing: -0.01em;
+    outline: 2px solid var(--docs-ring);
+    outline-offset: 2px;
+  }
+  /* Edge: a text field's border takes the ring color, and an inset line makes it 2px. */
+  .pg-edge-sample {
+    display: flex;
+    align-items: center;
+    width: 200px;
+    max-width: calc(100% - 32px);
+    height: 40px;
+    padding-inline: 13px;
+    border: 1px solid var(--docs-ring);
+    border-radius: var(--os-radius-md);
+    background: var(--os-color-bg-surface);
+    box-shadow: inset 0 0 0 1px var(--docs-ring);
+    color: var(--os-color-fg-muted);
+    font: var(--os-font-weight-regular) var(--os-font-size-sm)/20px var(--os-font-family);
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  /* Inset: the ring sits inside the edge of a tile that has a neighbor 4px away. */
+  .pg-inset-track {
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    border-radius: var(--os-radius-lg);
+    background: var(--os-color-bg-muted);
+  }
+  .pg-inset-tile {
+    display: grid;
+    place-items: center;
+    height: 32px;
+    padding-inline: 14px;
+    border-radius: calc(var(--os-radius-lg) - 4px);
+    color: var(--os-color-fg-muted);
+    font: var(--os-font-weight-medium) var(--os-font-size-sm)/20px var(--os-font-family);
+    letter-spacing: -0.01em;
+  }
+  .pg-inset-tile[data-selected] { background: var(--os-color-bg-raised, var(--os-color-bg-surface)); box-shadow: var(--os-shadow-control); color: var(--os-color-fg-base); }
+  .pg-inset-tile[data-focused] { outline: 2px solid var(--docs-ring); outline-offset: -2px; color: var(--os-color-fg-base); }
+  .pg-focus { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .pg-layer-row { grid-template-columns: 208px 44px minmax(0, 1fr); }
+  .pg-try { display: grid; gap: 12px; width: 280px; max-width: 100%; margin: 0; }
+
+  /* ---------- Motion ---------- */
+
+  .pg-motion-row { grid-template-columns: 184px minmax(0, 1fr) 208px; padding-block: 16px; }
+  .pg-motion-row:first-child { padding-top: 0; }
+  .pg-motion-meta { display: grid; justify-items: start; gap: 2px; }
+  .pg-motion-demo { display: flex; align-items: center; justify-content: flex-end; gap: 12px; min-height: 48px; }
+
+  .pg-replay {
+    display: inline-flex;
+    align-items: center;
+    flex: none;
+    gap: 6px;
+    height: 28px;
+    padding-inline: 8px 10px;
+    border-radius: var(--os-radius-sm);
+    background: var(--docs-fill);
+    color: var(--os-color-fg-base);
+    font: var(--os-font-weight-medium) var(--os-font-size-xs)/16px var(--os-font-family);
+    letter-spacing: 0;
+    cursor: pointer;
+    transition: background-color var(--docs-time) var(--docs-ease);
+  }
+  .pg-replay:hover { background: var(--docs-fill-press); }
+  .pg-replay:active { background: color-mix(in oklab, var(--os-color-fg-base) 14%, transparent); }
+
+  /* Press: the sample answers the pointer for exactly the token's duration. */
+  .pg-press-sample {
+    display: grid;
+    place-items: center;
+    height: 40px;
+    padding-inline: 18px;
+    border-radius: var(--os-radius-full);
+    background: var(--os-color-accent-moderate);
+    color: var(--os-color-accent-on-accent);
+    font: var(--os-font-weight-medium) var(--os-font-size-sm)/1 var(--os-font-family);
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    transition: transform var(--os-motion-press) var(--os-ease-settle);
+  }
+  .pg-press-sample:active { transform: scale(.97); }
+
+  /* Hover: the fill steps toward the ink for exactly the token's duration. */
+  .pg-hover-sample {
+    display: grid;
+    place-items: center;
+    height: 40px;
+    padding-inline: 18px;
+    border-radius: var(--os-radius-full);
+    background: var(--os-color-accent-subtle);
+    color: var(--os-color-fg-base);
+    font: var(--os-font-weight-medium) var(--os-font-size-sm)/1 var(--os-font-family);
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: background-color var(--pg-duration) var(--os-ease-settle);
+  }
+  @media (hover: hover) {
+    .pg-hover-sample:hover { background: var(--os-color-accent-dim); }
+  }
+
+  /* Spin: one turn per token, at a constant speed. */
+  .pg-spin-sample {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--os-color-border-muted);
+    border-top-color: var(--os-color-fg-base);
+    border-radius: var(--os-radius-full);
+    animation: pg-spin var(--pg-duration) linear infinite;
+  }
+  @keyframes pg-spin { to { transform: rotate(1turn); } }
+
+  /* Replayed demos: one small frame each, drawn for the token's duration. */
+  .pg-anim-frame {
+    position: relative;
+    display: block;
+    flex: none;
+    width: 104px;
+    height: 48px;
+    overflow: hidden;
+    border-radius: var(--os-radius-md);
+    background: var(--os-color-bg-subtle);
+    box-shadow: inset 0 0 0 1px var(--docs-line);
+  }
+  .pg-anim { position: absolute; display: block; }
+  .pg-anim:not([data-run]) { opacity: 0; }
+  /* Popup: a menu drops from just under its trigger, from the trigger side. */
+  .pg-anim[data-shape="popup"] {
+    top: 8px;
+    left: 16px;
+    right: 16px;
+    height: 28px;
+    border-radius: var(--os-radius-sm);
+    background: var(--os-color-bg-elevated, var(--os-color-bg-surface));
+    box-shadow: inset 0 0 0 1px var(--os-color-border-subtle), var(--os-shadow-popup);
+    transform-origin: top center;
+  }
+  .pg-anim[data-shape="popup"][data-run] { animation: pg-popup-in var(--pg-duration) var(--os-ease-settle) both; }
+  .pg-anim[data-shape="modal"] {
+    inset: 10px 18px;
+    border-radius: var(--os-radius-sm);
+    background: var(--os-color-bg-elevated, var(--os-color-bg-surface));
+    box-shadow: inset 0 0 0 1px var(--os-color-border-subtle), var(--os-shadow-popup);
+  }
+  .pg-anim[data-shape="modal"][data-run] { animation: pg-modal-in var(--pg-duration) var(--os-ease-settle) both; }
+  .pg-anim[data-shape="sheet"] {
+    inset: 0 0 0 auto;
+    width: 44px;
+    background: var(--os-color-bg-elevated, var(--os-color-bg-surface));
+    box-shadow: inset 1px 0 0 var(--os-color-border-subtle), var(--os-shadow-popup);
+  }
+  .pg-anim[data-shape="sheet"][data-run] { animation: pg-sheet-in var(--pg-duration) var(--os-ease-settle) both; }
+  .pg-anim[data-shape="layout"] {
+    inset: 14px auto 14px 12px;
+    width: calc(100% - 24px);
+    border-radius: var(--os-radius-xs, 4px);
+    background: color-mix(in oklab, var(--os-color-fg-base) 16%, transparent);
+  }
+  .pg-anim[data-shape="layout"][data-run] { animation: pg-layout-in var(--pg-duration) var(--os-ease-settle) both; }
+  .pg-anim[data-shape="slow"] {
+    inset: 21px 12px;
+    border-radius: var(--os-radius-full);
+    background: var(--os-color-fg-base);
+    transform-origin: left center;
+  }
+  .pg-anim[data-shape="slow"][data-run] { animation: pg-fill-in var(--pg-duration) var(--os-ease-settle) both; }
+  .pg-anim[data-shape="travel"] {
+    top: 16px;
+    left: calc(100% - 28px);
+    width: 16px;
+    height: 16px;
+    border-radius: var(--os-radius-full);
+    background: var(--os-color-fg-base);
+  }
+  .pg-anim[data-shape="travel"][data-run] { animation: pg-dot-travel var(--pg-duration) var(--os-ease-settle) both; }
+  @keyframes pg-modal-in { from { opacity: 0; transform: translateY(8px) scale(.98); } }
+  @keyframes pg-sheet-in { from { transform: translateX(100%); } }
+  @keyframes pg-layout-in { from { width: 24px; } }
+  @keyframes pg-fill-in { from { transform: scaleX(0); } }
+  @keyframes pg-dot-travel { from { left: 12px; } }
+
+  @keyframes pg-popup-in { from { opacity: 0; transform: translateY(-4px) scale(.96); } }
+
+  .pg-ease-section > .pg-rows { margin-top: 4px; }
+
+  /* Easing: the curve as a graph, and the same curve moving a dot beside a linear one. */
+  .pg-ease { display: grid; grid-template-columns: 152px minmax(0, 1fr); align-items: center; gap: 40px; width: 100%; }
+  .pg-curve { display: block; width: 152px; height: 152px; overflow: visible; }
+  .pg-curve-frame { fill: none; stroke: var(--os-color-border-subtle); stroke-width: 1; }
+  .pg-curve-guide { fill: none; stroke: var(--os-color-border-muted); stroke-width: 1; stroke-dasharray: 2 4; }
+  .pg-curve-handle { fill: none; stroke: var(--os-color-fg-disabled); stroke-width: 1; }
+  .pg-curve-dot { fill: var(--os-color-bg-subtle); stroke: var(--os-color-fg-subtle); stroke-width: 1.25; }
+  .pg-curve-line { fill: none; stroke: var(--os-color-fg-base); stroke-width: 2; stroke-linecap: round; }
+  .pg-tracks { display: grid; gap: 20px; min-width: 0; }
+  .pg-track-group { display: grid; gap: 8px; min-width: 0; }
+  .pg-track { position: relative; height: 16px; border-radius: var(--os-radius-full); background: color-mix(in oklab, var(--os-color-fg-base) 7%, transparent); }
+  .pg-track-dot { position: absolute; top: 0; left: calc(100% - 16px); width: 16px; height: 16px; border-radius: var(--os-radius-full); background: var(--os-color-fg-base); }
+  .pg-track[data-linear] .pg-track-dot { background: var(--os-color-fg-disabled); }
+  .pg-track[data-run] .pg-track-dot { animation: pg-travel 900ms var(--pg-ease, linear) both; }
+  .pg-track[data-linear][data-run] .pg-track-dot { animation-timing-function: linear; }
+  @keyframes pg-travel { from { left: 0; } to { left: calc(100% - 16px); } }
+  .pg-ease-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+
+  /* ---------- Icons ---------- */
+
+  .pg-filter { display: flex; align-items: center; gap: 16px; margin: 4px 0 16px; }
+  .pg-filter-field { position: relative; flex: 1; min-width: 0; max-width: 320px; color: var(--os-color-fg-subtle); }
+  .pg-filter-field svg { position: absolute; top: 10px; left: 10px; pointer-events: none; }
+  .pg-filter-input {
+    width: 100%;
+    height: 36px;
+    padding-inline: 34px 12px;
+    border-radius: var(--docs-radius-control);
+    background: var(--docs-fill);
+    color: var(--os-color-fg-base);
+    font-size: var(--os-font-size-sm);
+    line-height: 20px;
+    letter-spacing: inherit;
+    transition: background-color var(--docs-time) var(--docs-ease);
+  }
+  .pg-filter-input::placeholder { color: var(--os-color-fg-subtle); opacity: 1; }
+  .pg-filter-input:hover { background: var(--docs-fill-press); }
+  .pg-filter-input::-webkit-search-cancel-button { display: none; }
+  .pg-filter-count { margin-inline-start: auto; color: var(--os-color-fg-subtle); font-size: 13px; line-height: 20px; letter-spacing: 0; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  .pg-icons { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 8px; margin: 0 0 16px; padding: 0; list-style: none; }
+  .pg-icons > li { min-width: 0; }
+  .pg-icon {
+    display: grid;
+    grid-template-rows: 48px 32px;
+    justify-items: center;
+    width: 100%;
+    padding: 10px 6px 8px;
+    border-radius: var(--os-radius-md);
+    background: var(--os-color-bg-subtle);
+    color: var(--os-color-fg-base);
+    cursor: pointer;
+    transition: background-color var(--docs-time) var(--docs-ease);
+  }
+  .pg-icon:hover { background: color-mix(in oklab, var(--os-color-fg-base) 5%, var(--os-color-bg-subtle)); }
+  .pg-icon:active { background: color-mix(in oklab, var(--os-color-fg-base) 10%, var(--os-color-bg-subtle)); }
+  .pg-icon-glyph { display: grid; place-items: center; }
+  /* A long name breaks after a hyphen onto a second line rather than being cut off. */
+  .pg-icon-name {
+    display: grid;
+    align-items: center;
+    max-width: 100%;
+    color: var(--os-color-fg-muted);
+    font-size: var(--os-font-size-xs);
+    line-height: 16px;
+    letter-spacing: 0;
+    text-align: center;
+    overflow-wrap: anywhere;
+  }
+  .pg-icon[data-copied] .pg-icon-name { color: var(--os-color-fg-base); font-weight: var(--os-font-weight-medium); }
+  .pg-empty { margin: 0 0 16px; padding: 40px 16px; border-radius: var(--os-radius-lg); background: var(--os-color-bg-subtle); color: var(--os-color-fg-muted); font-size: var(--os-font-size-sm); line-height: 20px; text-align: center; }
+
+  .pg-icon-sizes { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: center; gap: 40px; }
+  .pg-icon-size { display: grid; justify-items: center; gap: 12px; }
+  .pg-icon-size-row { display: flex; align-items: center; gap: 12px; color: var(--os-color-fg-base); }
+
+  /* ---------- Reduced motion ---------- */
+
+  @media (prefers-reduced-motion: reduce) {
+    .pg-press-sample { transition-duration: 0ms; }
+    .pg-press-sample:active { transform: none; }
+    .pg-track[data-run] .pg-track-dot { animation: none; }
+    .pg-hover-sample { transition-duration: 0ms; }
+    /* A spinner stops on a still three-quarter ring. */
+    .pg-spin-sample { animation: none; border-right-color: var(--os-color-fg-base); }
+    .pg-anim[data-run] { animation: pg-fade-in 120ms var(--os-ease-settle) both; }
+    .pg-nest-outer,
+    .pg-nest-inner { transition: none; }
+    .pg-tile-link:not([data-static]):hover svg { transform: none; }
+  }
+  @keyframes pg-fade-in { from { opacity: 0; } }
+
+  /* ---------- Widths ---------- */
+
+  /* The page column is narrow from here down: under the sidebar on a tablet, alone on a phone. */
+  @media (max-width: 1023px) {
+    .pg-motion-row { grid-template-columns: minmax(0, 1fr) auto; }
+    .pg-motion-row > .pg-use { grid-column: 1 / -1; grid-row: 2; }
+    .pg-motion-row > .pg-motion-demo { grid-column: 2; grid-row: 1; }
+    .pg-roles .pg-row { grid-template-columns: 112px minmax(0, 1fr); }
+    .pg-roles .pg-row > .pg-role-spec { grid-column: 2; text-align: start; }
+    .pg-type-row { grid-template-columns: minmax(0, 1fr); row-gap: 8px; }
+    .pg-space-row,
+    .pg-stroke-row { grid-template-columns: 124px 40px minmax(0, 1fr); }
+    .pg-space-row > .pg-use,
+    .pg-stroke-row > .pg-use { grid-column: 1 / -1; }
+    .pg-size-row { grid-template-columns: 48px minmax(0, 1fr) auto; }
+    .pg-size-row > .pg-use { grid-column: 2 / -1; }
+    /* Each shadow becomes a row, its sample beside its name, so three never leave one alone. */
+    .pg-levels { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+    .pg-levels .pg-level { grid-template-columns: 184px minmax(0, 1fr); column-gap: 20px; align-content: center; }
+    .pg-levels .pg-level > :not(.pg-level-stage) { grid-column: 2; }
+    .pg-levels .pg-level-stage { grid-row: 1 / span 4; height: 128px; margin: 0; }
+    .pg-focus { grid-template-columns: minmax(0, 1fr); }
+    .pg-leading-row,
+    .pg-tracking-row,
+    .pg-layer-row { grid-template-columns: minmax(0, 1fr) auto; }
+    .pg-leading-row > :nth-child(n + 3),
+    .pg-tracking-row > :nth-child(n + 3),
+    .pg-layer-row > .pg-use { grid-column: 1 / -1; }
+    .pg-shapes { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .pg-theme-demo { grid-template-columns: minmax(0, 1fr); }
+    .pg-principles { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+    .pg-browse-group { grid-template-columns: minmax(0, 1fr); row-gap: 4px; }
+    .pg-browse-label { padding-block: 2px; color: var(--os-color-fg-subtle); font-size: var(--os-font-size-xs); }
+    .pg-links { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .pg-ease { grid-template-columns: minmax(0, 1fr); justify-items: center; gap: 24px; }
+    .pg-tracks { width: 100%; }
+  }
+
+  @media (max-width: 767px) {
+    .pg-specimen { padding: 24px 16px; }
+    .pg-token-row { grid-template-columns: minmax(0, 1fr); }
+    .pg-face-sample { font-size: 40px; }
+    .pg-face-glyphs { font-size: 16px; line-height: 26px; }
+    .pg-figure { padding-inline: 14px; }
+    .pg-figure-list { font-size: var(--os-font-size-lg); line-height: 28px; }
+    /* A weight becomes a row: the sample beside its name, so long token names do not break. */
+    .pg-weights { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+    .pg-weight { grid-template-columns: 72px minmax(0, 1fr); column-gap: 16px; align-content: center; }
+    .pg-weight > :not(.pg-weight-sample) { grid-column: 2; }
+    .pg-weight-sample { grid-row: 1 / span 3; width: 72px; height: 72px; margin: 0; font-size: 28px; border-radius: var(--os-radius-md); }
+    .pg-roles .pg-row { grid-template-columns: minmax(0, 1fr); row-gap: 6px; }
+    .pg-roles .pg-row > .pg-role-spec { grid-column: 1; }
+    .pg-levels { gap: 32px; }
+    .pg-levels .pg-level { grid-template-columns: minmax(0, 1fr); }
+    .pg-levels .pg-level > :not(.pg-level-stage) { grid-column: 1; }
+    .pg-levels .pg-level-stage { grid-row: auto; height: 144px; margin-bottom: 12px; }
+    .pg-nest-pair { gap: 16px; }
+    .pg-nest-inner { height: 72px; }
+    .pg-motion-row { grid-template-columns: minmax(0, 1fr); }
+    .pg-motion-row > .pg-motion-demo { grid-column: 1; grid-row: auto; justify-content: flex-start; }
+    .pg-filter { flex-wrap: wrap; gap: 8px 16px; }
+    .pg-filter-field { flex-basis: 100%; max-width: none; }
+    .pg-filter-count { margin-inline-start: 0; }
+    .pg-icons { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .pg-icon-sizes { gap: 20px; }
+    /* The measured buttons stack: each beside its height, so three fit any width. */
+    .pg-measured-row { display: grid; justify-content: center; gap: 16px; }
+    .pg-measured { grid-template-columns: 88px auto; align-items: center; justify-items: start; gap: 16px; }
+  }
+}

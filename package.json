@@ -1,0 +1,47 @@
+{
+  "name": "otherstates",
+  "private": true,
+  "version": "0.1.0",
+  "description": "React components with every state already designed, and a kit that keeps coding agents on the system.",
+  "license": "MIT",
+  "author": "Tucker Eighmy",
+  "homepage": "https://otherstates.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tuckereighmy/otherstates-ui.git"
+  },
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 5180",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview --host 127.0.0.1 --port 5181",
+    "typecheck": "tsc --noEmit",
+    "check": "node src/ui/agent/check.mjs src/ui",
+    "agent:docs": "node src/ui/agent/build-docs.mjs",
+    "new": "node src/ui/agent/new-component.mjs",
+    "kit": "node scripts/build-kit.mjs",
+    "kit:test": "node scripts/test-kit.mjs",
+    "kit:test:next": "node scripts/test-kit-next.mjs",
+    "visual": "playwright test -c visual/playwright.config.ts",
+    "visual:baseline": "node -e \"require('fs').rmSync('.visual/baseline',{recursive:true,force:true})\" && playwright test -c visual/playwright.config.ts --update-snapshots=all",
+    "visual:report": "playwright show-report .visual/report"
+  },
+  "dependencies": {
+    "@fontsource-variable/inter": "^5.3.0",
+    "@internationalized/date": "3.12.4",
+    "@outpacelabs/avatars": "^0.6.0",
+    "@stylexjs/stylex": "0.19.0",
+    "react": "19.2.8",
+    "react-aria-components": "1.22.1",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.51.0",
+    "@stylexjs/unplugin": "0.19.0",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "@vitejs/plugin-react": "6.0.2",
+    "typescript": "5.9.3",
+    "vite": "^8.3.8"
+  }
+}

@@ -1,0 +1,77 @@
+# Checks every push and pull request. Pushes to main that pass are deployed to otherstates.com on Vercel.
+#
+# The deploy uses the Vercel CLI instead of Vercel's Git integration, because the Vercel account that hosts
+# the site is connected to a different GitHub account than the one that owns this repository.
+# Repository secrets it needs: VERCEL_TOKEN, VERCEL_ORG_ID and VERCEL_PROJECT_ID.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Design-system check
+        run: npm run check
+      - name: Types
+        run: |
+          npm run typecheck
+          npx tsc --noEmit -p tsconfig.kit.json
+      - name: Agent catalog is current
+        run: node src/ui/agent/build-docs.mjs --check
+      - name: Theme builder verifiers
+        run: |
+          node scripts/verify-theme.mjs
+          node scripts/verify-export.mjs
+      - name: Site builds
+        run: npm run build
+      - name: Kit builds and packs
+        run: npm run kit
+
+  deploy:
+    needs: checks
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://otherstates.com
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      # Until the token secret exists, skip with a notice instead of failing the run.
+      - id: token
+        run: |
+          if [ "${{ secrets.VERCEL_TOKEN != '' }}" = "true" ]; then echo "present=true" >> "$GITHUB_OUTPUT";
+          else echo "::notice::VERCEL_TOKEN is not set, so this push was not deployed."; fi
+      - if: steps.token.outputs.present == 'true'
+        uses: actions/checkout@v4
+      - if: steps.token.outputs.present == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - if: steps.token.outputs.present == 'true'
+        run: npm install --global vercel@65.9.0
+      - if: steps.token.outputs.present == 'true'
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+      - if: steps.token.outputs.present == 'true'
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+      - if: steps.token.outputs.present == 'true'
+        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}

@@ -1,0 +1,19 @@
+node_modules/
+dist/
+*.tsbuildinfo
+.env.local
+output/
+.playwright-cli/
+
+# Internal plans and notes, kept out of the public repository.
+plans/
+
+# OS and tool caches
+.DS_Store
+.vite/
+
+# Screenshot baseline, build, results and report (npm run visual)
+.visual/
+
+# Vercel project link
+.vercel/
